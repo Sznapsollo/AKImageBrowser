@@ -8,7 +8,7 @@ Working example: <a href="http://cultrides.com/test/Github/AKImageBrowser/" targ
 
 ## Usage
 
-The idea is to copy contents of AKImageBrowser to some webserver folder that contains images. Then open this folder address in webbrowser which will allow to browse these images in a bit more friendly matter.
+The idea is to copy contents of AKImageBrowser to some webserver folder that contains images. Then open this folder address in webbrowser which will allow to browse these images in a bit more friendly manner.
 
 AKImageBrowser has some features that make image browsing a bit more pleasant:
 - paging with options to choose how many images per page should be displayed
