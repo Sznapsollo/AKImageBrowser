@@ -1,0 +1,22 @@
+<div class="pageContent">
+	
+	<div class="articleMin" ng-repeat="image in imagesList">
+		<a class="fancybox" title="{{image}}" data-fancybox-type="image" data-fancybox-group="images" href="{{url+image}}">
+			<div style="width: {{pageController.imageWidth}}px;">
+				<div >
+					<img lazy-src="{{url+image}}" alt="" style="width: 100%; height: auto"/>
+				</div>
+				<div ng-if="pageController.imageWidth >= 100"style="word-wrap: break-word">{{image}}</div>
+			</div>
+		</a>
+	</div>
+	
+	<i ng-show="dataLoading" class="fa fa-spinner fa-4x fa-spin marginTop10 marginBottom10"></i>
+
+	<div ng-show="showNoResults()" class="noResults">There are no results for given search criteria. Perhaps folder is empty or it does not containany image types defined in options.</div>
+
+	<div ng-hide="showNoResults()">
+		<pager></pager>
+	</div>
+	
+</div>

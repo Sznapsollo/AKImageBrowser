@@ -1,0 +1,109 @@
+#mainContainer
+{
+	width: 95%;
+	margin: 0 auto 0 auto;
+}
+
+#footer
+{
+	width: 95%;
+	display: table;
+	color: #999999;
+	padding: 10px;
+	clear: both;
+	border-top: 2px solid #DDDDDD;
+}
+
+#footer .leftColumn
+{
+	width: 50%;
+	height: 100%;
+	display: table-cell;
+}
+
+#footer .rightColumn
+{
+	text-align: right;
+	width: 50%;
+	height: 100%;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+#footer ul
+{
+	margin: 0px 0px 0 0px;
+}
+
+#footer ul li
+{
+	display: inline;
+	margin: 0 10px 0 0;
+}
+
+#middleSection
+{
+	width: 100%;
+	text-align: center;
+	vertical-align: top;
+	/*display: table;*/
+}
+
+#middleSection .inner
+{
+	padding: 0 0px 0 20px;
+}
+
+.noResults
+{
+	margin: 20px 0 20px 0;
+	font-family: 'Titillium Web', sans-serif;
+    line-height: 40px;
+    text-transform: uppercase;
+	font-weight: 700;
+	color: #cecece;
+}
+
+.pagerArea
+{
+	clear: both;
+	margin: 0 0 15px 0;
+	font-weight: 700;
+}
+
+.pagerArea .choosePageArea
+{
+	margin: 0 10px 0 10px;
+}
+
+.pagerArea .pagerButtons {
+	margin-top: 15px;
+}
+
+.pagerArea  A {
+  font-family: tahoma;
+  font-size: 10pt;
+  color: #555555;
+  text-decoration: none;
+  padding: 10px;
+  border: 1px solid #ffffff;
+  text-transform: uppercase;
+  background: rgba(255,255,255,0.3);
+}
+
+.pagerArea  A:visited {
+  color: #555555;
+  text-decoration: none;
+}
+
+.pagerArea  A:active {
+  color: #555555;
+  text-decoration: none;
+}
+
+.pagerArea  A:hover {
+  color: #3399ff;
+  text-decoration: none;
+  border: 1px solid #3399ff;
+  border-radius: 5px;
+}

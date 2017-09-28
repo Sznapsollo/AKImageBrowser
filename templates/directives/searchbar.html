@@ -1,0 +1,19 @@
+<div id="searchSection">
+	<div id="searchSectionInner">
+		<div class="leftColumn" >
+			<div ng-click="showSortCriteria($event)" id="sortCriteria">{{sortPlaceholder}}</div>
+			<div ng-click="showCategoryCriteria($event)" id="categoryCriteria">{{categoryPlaceholder}}</div>
+			<input type="text" ng-model="searchText" ng-keyup="$event.keyCode == 13 && submitSearch()" ng-change="updateSearch()" ng-blur="stopSuggestions()" name="search" class="search" placeholder="Search..." />
+			<button type="button" class="wobble-top" ng-click="submitSearch()">S</button>
+			<a class="resetSearch" href="#/cultrides">reset search</a>
+			
+			<div id="autocompletePopupContent">
+				<div ng-repeat="suggestion in suggestions" ng-click="useSuggestion(suggestion.id)" class="autocompleteLink" >{{suggestion.title}}</div>
+			</div>
+
+		</div>
+		<div class="rightColumn" >
+			
+		</div>
+	</div>
+</div>

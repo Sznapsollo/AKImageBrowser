@@ -1,0 +1,105 @@
+<!doctype html>
+<html ng-app="imagesBrowser">
+
+<head>
+<meta http-equiv="Content-Language" content="pl">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="all">
+<meta name="revisit-after" content="3 days">
+<meta name="distribution" content="global">
+<meta name="description" content="" />
+<meta name="keywords" content="" />
+<meta name="homepage" content="www.webproject.waw.pl">
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="inc/lib/angular.min.js"></script>
+<script src="inc/lib/angular-route.min.js"></script>
+<script type="text/javascript" src="inc/fancybox/jquery.fancybox.js?v=2.1.5"></script>
+<link rel="stylesheet" type="text/css" href="inc/fancybox/jquery.fancybox.css?v=2.1.5" media="screen" />
+<script src="inc/js/app.js"></script>
+<script src="inc/js/directives/general.js"></script>
+<script src="inc/js/directives/me-lazyload.js"></script>
+<script src="inc/js/services/general.js"></script>
+<script src="inc/js/controllers/general.js"></script>
+<script src="inc/js/controllers/imagescontroller.js"></script>
+<script src="inc/js/controllers/pagercontroller.js"></script>
+<script src="inc/js/controllers/pagecontroller.js"></script>
+<script src="inc/js/skrypty.js"></script>
+<script src="inc/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+<link href="inc/css/animations.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="inc/bootstrap-3.3.6/css/bootstrap.min.css">
+<link href="inc/css/cascade.css" rel="stylesheet" type="text/css">
+<link href="inc/css/section.css" rel="stylesheet" type="text/css">
+<link href="inc/css/font-awesome-4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+<title>AKImagesBrowser</title>
+
+</head>
+
+<body>
+	<div id="pageWrapper" ng-controller="PageController as pageController">
+	<button type="button" class="btn btn-default btn-lg" id="return-to-top" >Top
+	</button>
+		<!-- Return to Top -->
+		<a href="javascript:" id="return-to-top"><i class="icon-chevron-up"></i></a>
+		<nav class="navbar navbar-default navbar-fixed-top navbar-inverse" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+					  <span class="sr-only">Toggle navigation</span>
+					  <span class="icon-bar"></span>
+					  <span class="icon-bar"></span>
+					  <span class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" ng-click="pageController.redirectToMain()">AKImageBrowser</a>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav">
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+					  <li><a data-toggle="modal" data-target="#myModal">Options</a></li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		<div id="mainContainer">
+			<div id="middleSection">
+				<div class="inner">
+					<ng-view></ng-view>
+				</div>
+			</div>
+			<page-footer></page-footer>
+		</div>
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" role="dialog">
+			<div class="modal-dialog">
+
+			  <!-- Modal content-->
+			  <div class="modal-content">
+				<div class="modal-header">
+				  <button type="button" class="close" data-dismiss="modal" ng-click="pageController.closeOptions()">&times;</button>
+				  <h4 class="modal-title">Options</h4>
+				</div>
+				<div class="modal-body">
+				  <p>
+					Image size: {{pageController.imageWidth}}px
+					<a href="" ng-click="pageController.resetImageWidth()">reset</a>
+					<input type="range" min="50" max="{{pageController.maxWidth}}" ng-model="pageController.imageWidth" ng-change="pageController.rememberImageWidth(pageController.imageWidth)">
+				  </p>
+				  <p>
+					File types (example: jpg, gif, png,)
+					<input type="text" ng-model="pageController.fileTypesTemp" />
+					<a href="" ng-click="pageController.resetfileTypes()">reset</a>
+				  </p>
+				</div>
+				<div class="modal-footer">
+				  <button type="button" class="btn btn-primary" ng-click="pageController.saveOptions()" data-dismiss="modal">Apply</button>
+				</div>
+			  </div>
+			  
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
