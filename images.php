@@ -48,7 +48,10 @@ if(isset($input->receive))
 	{
 			if($index >= $startIndex && $count < $itemsPerPage)
 			{
-				$returnFiles[] = $file;
+				$fileInfo = new StdClass();
+				$fileInfo->name = $file;
+				$fileInfo->changeDate = date("Y-m-d H:i:s", filemtime($file));
+				$returnFiles[] = $fileInfo;
 				$count++;
 			}
 			$index++;

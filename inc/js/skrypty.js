@@ -22,10 +22,14 @@ $(document).ready(function()
 
 var fileTypesDefault = 'jpg, gif, png,';
 var fileTypesStorageName = 'fileTypes';
+var fileTimesStorageName = 'showFileTimes';
+var fileNamesStorageName = 'showFileNames';
 var itemsPerPageDefault = 48;
 var itemsPerPageStorageName = 'itemsPerPage';
 var imagesWidthDefault = 150;
 var imagesWidthStorageName = 'imageWidth';
+var hideDescriptionsStorageName = 'hideDescriptionsBelowWidth'
+var hideDescriptionsStorageDefault = 100
 
 function StartFancyBox()
 {
@@ -37,8 +41,13 @@ function StartFancyBox()
 function GetLocalStorage(index, defaultValue) {
 	if(localStorage[index] == undefined)
 		return defaultValue;
-	else
-		return localStorage[index];
+	else {
+	
+		if(typeof defaultValue === 'boolean')
+			return JSON.parse(localStorage[index]);
+		else
+			return localStorage[index];
+	}
 }
 
 function SetLocalStorage(name, value) {

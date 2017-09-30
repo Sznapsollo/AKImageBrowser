@@ -218,6 +218,11 @@ A.social-face:hover
     float: left;
     margin: 0 15px 15px 0;}
 
+.imageArea
+{
+	font-size: 8pt;
+}
+
 #return-to-top {
 	font-size: 8pt;
     display: none;

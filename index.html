@@ -82,18 +82,32 @@
 				</div>
 				<div class="modal-body">
 				  <p>
-					Image size: {{pageController.imageWidth}}px
+					<label for="imageWidth">Image size: {{pageController.imageWidth}}px</label>
 					<a href="" ng-click="pageController.resetImageWidth()">reset</a>
-					<input type="range" min="50" max="{{pageController.maxWidth}}" ng-model="pageController.imageWidth" ng-change="pageController.rememberImageWidth(pageController.imageWidth)">
+					<input id="imageWidth" type="range" min="50" max="{{pageController.maxWidth}}" ng-model="pageController.imageWidth" ng-change="pageController.rememberImageWidth(pageController.imageWidth)">
 				  </p>
 				  <p>
-					File types (example: jpg, gif, png,)
-					<input type="text" ng-model="pageController.fileTypesTemp" />
+					<label for="showFileTimes">Show file change times:</label>
+					<input id="showFileTimes" type="checkbox" ng-model="pageController.showFileTimes" />
+				  </p>
+				  <p>
+					<label for="showFileNames">Show file names:</label>
+					<input id="showFileNames" type="checkbox" ng-model="pageController.showFileNames" />
+				  </p>
+				  <p>
+					<label for="hideDescriptionsBelow">Hide text below image width: {{pageController.hideDescriptionsBelow}}px</label>
+					<a href="" ng-click="pageController.resetHideDescriptionsBelow()">reset</a>
+					<input id="hideDescriptionsBelow" type="range" step="10" min="0" max="1000" ng-model="pageController.hideDescriptionsBelow">
+				  </p>
+				  <p>
+					<label for="resetfileTypes">File types (example: jpg, gif, png,) - will require clicking "Apply"</label>
+					<input id="resetfileTypes" type="text" ng-model="pageController.fileTypes" />
 					<a href="" ng-click="pageController.resetfileTypes()">reset</a>
 				  </p>
 				</div>
 				<div class="modal-footer">
-				  <button type="button" class="btn btn-primary" ng-click="pageController.saveOptions()" data-dismiss="modal">Apply</button>
+					"Save" will cache these settings for future browsing
+					<button type="button" class="btn btn-primary" ng-click="pageController.saveOptions()" data-dismiss="modal">Save</button>
 				</div>
 			  </div>
 			  
