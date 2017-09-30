@@ -15,6 +15,8 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 - lazy loading -> images will load when user actually displays them
 - filtering of image types -> user can set what type of file extensions should be displayed [in options]
 - image scaling -> user can adjust size of images to be displayed in gallery. [in options]
+- optional showing image name and image change date in images list
+- option to hide image descriptions whenl image size lower than specified value
 
 ## Note
 
