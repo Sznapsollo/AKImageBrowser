@@ -28,8 +28,11 @@ var itemsPerPageDefault = 48;
 var itemsPerPageStorageName = 'itemsPerPage';
 var imagesWidthDefault = 150;
 var imagesWidthStorageName = 'imageWidth';
-var hideDescriptionsStorageName = 'hideDescriptionsBelowWidth'
-var hideDescriptionsStorageDefault = 100
+var hideDescriptionsStorageName = 'hideDescriptionsBelowWidth';
+var hideDescriptionsStorageDefault = 100;
+var autoRefreshStorageName = 'autoRefresh';
+var autoRefreshIntervalStorageName = 'autoRefreshInterval';
+var autoRefreshIntervalDefault = 120;
 
 function StartFancyBox()
 {

@@ -17,6 +17,7 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 - image scaling -> user can adjust size of images to be displayed in gallery. [in options]
 - optional showing image name and image change date in images list
 - option to hide image descriptions whenl image size lower than specified value
+- option to autorefresh gallery, refresh interval can be changed
 
 ## Note
 

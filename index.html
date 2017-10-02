@@ -100,6 +100,14 @@
 					<input id="hideDescriptionsBelow" type="range" step="10" min="0" max="1000" ng-model="pageController.hideDescriptionsBelow">
 				  </p>
 				  <p>
+					<label for="showFileNames">Auto refresh gallery content:</label>
+					<input id="showFileNames" type="checkbox" ng-model="pageController.autoRefresh" />
+				  </p>
+				  <p>
+					<label for="hideDescriptionsBelow">Refresh every: {{pageController.autoRefreshInterval}} seconds</label>
+					<input id="hideDescriptionsBelow" type="range" step="10" min="60" max="10000" ng-model="pageController.autoRefreshInterval">
+				  </p>
+				  <p>
 					<label for="resetfileTypes">File types (example: jpg, gif, png,) - will require clicking "Apply"</label>
 					<input id="resetfileTypes" type="text" ng-model="pageController.fileTypes" />
 					<a href="" ng-click="pageController.resetfileTypes()">reset</a>
