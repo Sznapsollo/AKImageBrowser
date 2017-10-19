@@ -6,6 +6,8 @@ AKImageBrowser is quick deployable web image browser/gallery that will display i
 
 Working example: <a href="http://cultrides.com/test/Github/AKImageBrowser/" target="_blank">AKIMageBrowser example</a>
 
+Youtube quick vid showing way to deploy and use: <a href="https://youtu.be/LktPTabEfws" target="_blank">AKIMageBrowser video</a>
+
 ## Usage
 
 The idea is to copy contents of AKImageBrowser to some webserver folder that contains images. Then open this folder address in webbrowser which will allow to browse these images in a bit more friendly manner.
