@@ -26,3 +26,7 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 This little tool comes in handy sometimes. I made it just to have easily deployable image browser with friendly interface for variety of needs (home camera images, vacation pics etc). Hope you will find it useful too ;-)
 
 Wanna touch base? office@webproject.waw.pl
+
+## Example Screen
+
+![Image of AKImageBrowser #1](http://cultrides.com/test/Github/AKImageBrowserDemo.JPG)
