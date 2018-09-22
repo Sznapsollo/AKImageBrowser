@@ -12,6 +12,24 @@ $startIndex = 5;
 $itemsPerPage = 10;
 $fileTypes = '';
 
+// purely optional and to be changed only from backend
+// if set to true it will automatically delete files older than x days specified by parameter
+// keeping folder clean
+$deleteOlderFiles = false;
+$deleteOlderThanDays = 21;
+
+function isValidFile($file, $fileTypes) {
+	if (!is_dir($file) && $file != "." && $file != "..") {
+		$ext = pathinfo($file, PATHINFO_EXTENSION);
+		$file_ext = explode(',',str_replace(' ', '', $fileTypes));
+
+		if(in_array(strtolower($ext),$file_ext)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 if(isset($input->receive))
 {		
 	if(isset($input->startIndex) && is_numeric($input->startIndex))
@@ -23,17 +41,25 @@ if(isset($input->receive))
 	if(isset($input->fileTypes))
 		$fileTypes = $input->fileTypes;
 	
+	if($deleteOlderFiles) {
+		$files = glob("*");
+		$now   = time();
+
+		foreach ($files as $file) {
+			if(isValidFile($file, $fileTypes)) {
+			  if ($now - filemtime($file) >= 60 * 60 * 24 * $deleteOlderThanDays) { 
+				unlink($file);
+			  }
+			}
+		}
+	}
+	
 	$files = array();
 	$dir = opendir('.'); // open the cwd..also do an err check.
-	while(false != ($file = readdir($dir))) {
-		if (!is_dir($file) && $file != "." && $file != "..") {		
-			$ext = pathinfo($file, PATHINFO_EXTENSION);
-			$file_ext = explode(',',str_replace(' ', '', $fileTypes));
 
-			if(in_array(strtolower($ext),$file_ext)) {
-				$files[] = $file;
-			}			
-		}
+	while(false != ($file = readdir($dir))) {
+		if(isValidFile($file, $fileTypes))
+			$files[] = $file;
 	}
 	
 	rsort($files);
