@@ -16,7 +16,7 @@ $fileTypes = '';
 // if set to true it will automatically delete files older than x days specified by parameter
 // keeping folder clean
 $deleteOlderFiles = false;
-$deleteOlderThanDays = 21;
+$deleteOlderThanDays = 14;
 
 function isValidFile($file, $fileTypes) {
 	if (!is_dir($file) && $file != "." && $file != "..") {
@@ -55,28 +55,32 @@ if(isset($input->receive))
 	}
 	
 	$files = array();
-	$dir = opendir('.'); // open the cwd..also do an err check.
+	$dir = opendir('.'); 
 
 	while(false != ($file = readdir($dir))) {
 		if(isValidFile($file, $fileTypes))
 			$files[] = $file;
 	}
 	
-	rsort($files);
-
+	//rsort($files);
 	//natsort($files); // sort.
+	
+	// sort files by last modified date
+	usort($files, function($x, $y) {
+		return filemtime($x) < filemtime($y);
+	});
 
 	$index = 0;
 	$count = 0;
 	$returnFiles = array();
-	// print.
+	
 	foreach($files as $file) 
 	{
 			if($index >= $startIndex && $count < $itemsPerPage)
 			{
 				$fileInfo = new StdClass();
 				$fileInfo->name = $file;
-				$fileInfo->changeDate = date("Y-m-d H:i:s", filemtime($file));
+				$fileInfo->changeDate = filemtime($file);
 				$returnFiles[] = $fileInfo;
 				$count++;
 			}
