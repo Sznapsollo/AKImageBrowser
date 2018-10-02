@@ -34,10 +34,29 @@ var autoRefreshStorageName = 'autoRefresh';
 var autoRefreshIntervalStorageName = 'autoRefreshInterval';
 var autoRefreshIntervalDefault = 120;
 
+function applePie() {
+	return ( navigator.userAgent.match(/(iPhone|iPod|iPad)/i) );
+}
+
 function StartFancyBox()
 {
 	$(".fancybox").fancybox({
-	   type: "image"
+		type: "image",
+		afterShow: function() {
+			$('.fancybox-wrap').swipe({
+				swipe : function(event, direction) {
+					if (direction === 'left' || direction === 'up') {
+						$.fancybox.prev( direction );
+					} else {
+						$.fancybox.next( direction );
+					}
+				}
+			});
+			if ( applePie() ) { $('body').css({'position': 'fixed'}); } 
+		},
+		afterClose: function() {
+			if ( applePie() ) { $('body').css({'position': ''}); }
+		}
 	 });
 }
 
