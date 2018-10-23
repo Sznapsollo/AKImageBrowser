@@ -8,7 +8,7 @@
 		<a class="fancybox" title="{{image.name}}, {{image.changeDate}}" data-fancybox-type="image" data-fancybox-group="images" href="{{url+image.name}}">
 			<div style="width: {{pageController.imageWidth}}px;" class="imageArea">
 				<div >
-					<img lazy-src="{{url+image.name}}" alt="" style="width: 100%; height: auto"/>
+					<img lazy-src="{{url+image.name}}" class="notInitiated" src="inc/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
 				</div>
 				<div ng-if="pageController.showFileTimes && pageController.showDescriptions()"style="word-wrap: break-word">{{image.changeDate * 1000 | date:'yyyy-MM-dd HH:mm:ss'}}</div>
 				<div ng-if="pageController.showFileNames && pageController.showDescriptions()"style="word-wrap: break-word">{{image.name}}</div>

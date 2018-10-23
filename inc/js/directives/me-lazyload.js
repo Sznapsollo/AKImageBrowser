@@ -68,6 +68,8 @@ app.directive('lazySrc', ['$window', '$document', function($window, $document){
             var iElement = obj.iElement,
                 $scope = obj.$scope;
             if(isVisible(iElement)){
+              if(iElement.length > 0 && iElement[0].classList.contains('notInitiated'))
+                iElement[0].classList.remove('notInitiated');
               iElement.attr('src', $scope.lazySrc);
             }
         });
@@ -81,6 +83,9 @@ app.directive('lazySrc', ['$window', '$document', function($window, $document){
             uid = getUid($el);
 
         $el.css('opacity', 1);
+
+        if(this.classList.contains('notInitiated'))
+            return;
 
         if(elements.hasOwnProperty(uid)){
             delete elements[uid];
