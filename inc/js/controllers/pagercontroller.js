@@ -39,7 +39,8 @@
 			$scope.selectedPage = $scope.startIndex/$scope.itemsPerPage;
 			var pagesNumber = $scope.totalItems/$scope.itemsPerPage;
 			for (var i = 0; i < pagesNumber; i++) { 
-				$scope.pages.push(i);
+				if(!$scope.pages.includes(i))
+					$scope.pages.push(i);
 			}
 			
 			if($scope.startIndex > 0) {
