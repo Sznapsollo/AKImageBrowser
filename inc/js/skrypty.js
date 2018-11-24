@@ -20,29 +20,32 @@ $(document).ready(function()
 	});
 });
 
-var fileTypesDefault = 'jpg, gif, png,';
-var fileTypesStorageName = 'fileTypes';
-var fileTimesStorageName = 'showFileTimes';
-var fileNamesStorageName = 'showFileNames';
-var itemsPerPageDefault = 48;
-var itemsPerPageStorageName = 'itemsPerPage';
-var imagesWidthDefault = 150;
-var imagesWidthStorageName = 'imageWidth';
-var hideDescriptionsStorageName = 'hideDescriptionsBelowWidth';
-var hideDescriptionsStorageDefault = 100;
-var autoRefreshStorageName = 'autoRefresh';
-var autoRefreshIntervalStorageName = 'autoRefreshInterval';
-var autoRefreshIntervalDefault = 120;
-
 function applePie() {
 	return ( navigator.userAgent.match(/(iPhone|iPod|iPad)/i) );
 }
 
+
+function manageHash(href) {
+
+	var imagesScope = getScope();
+	if(imagesScope && imagesScope.changeFancyBoxImage) {
+		imagesScope.changeFancyBoxImage(href);
+		imagesScope.$apply();
+	}
+}
+
+function getScope() {
+    var sel = '.pageContent';
+    return angular.element(sel).scope();
+}
+
 function StartFancyBox()
 {
-	$(".fancybox").fancybox({
+	$("#popupOnStartLink, .fancybox").fancybox({
 		type: "image",
 		afterShow: function() {
+			manageHash(this.href);
+			
 			$('.fancybox-wrap').swipe({
 				swipe : function(event, direction) {
 					if (direction === 'left' || direction === 'up') {
@@ -55,6 +58,7 @@ function StartFancyBox()
 			if ( applePie() ) { $('body').css({'position': 'fixed'}); } 
 		},
 		afterClose: function() {
+			manageHash(null);
 			if ( applePie() ) { $('body').css({'position': ''}); }
 		}
 	 });

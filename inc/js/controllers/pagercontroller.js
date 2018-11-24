@@ -6,15 +6,15 @@
 		$scope.pages = [];
 		$scope.itemsPerPageArray = [12,24,48,96,192,384,768]
 		$scope.selectedPage = 0;
-		$scope.selectedItemsPerPage =  parseInt(GetLocalStorage(itemsPerPageStorageName, itemsPerPageDefault));
+		$scope.selectedItemsPerPage =  parseInt(GetLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault));
 		$scope.updateItemsPerPage = function() 
 		{
 			SetLocalStorage("itemsPerPage", $scope.selectedItemsPerPage);
-			$location.path('/images/0/'+GetLocalStorage(itemsPerPageStorageName, itemsPerPageDefault));
+			$location.path('/images/0/'+GetLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault));
 		}
 		$scope.updateSelectedPage = function() 
 		{
-			$location.path('/images/'+$scope.selectedPage*$scope.itemsPerPage+'/'+GetLocalStorage(itemsPerPageStorageName, itemsPerPageDefault));
+			$location.path('/images/'+$scope.selectedPage*$scope.itemsPerPage+'/'+GetLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault));
 		}
 	
 		$scope.canGoBack = function()
@@ -34,7 +34,7 @@
 			$scope.totalItems = parseInt(allCount, 0);
 			
 			if($scope.itemsPerPage <= 0)
-				$scope.itemsPerPage = GetLocalStorage(itemsPerPageStorageName, itemsPerPageDefault);
+				$scope.itemsPerPage = GetLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault);
 			
 			$scope.selectedPage = $scope.startIndex/$scope.itemsPerPage;
 			var pagesNumber = $scope.totalItems/$scope.itemsPerPage;
@@ -56,12 +56,12 @@
 				$scope.nextNode = $scope.startIndex + $scope.itemsPerPage;
 				
 				$scope.lastNode = $scope.totalItems - $scope.itemsPerPage;
-				var itemsRound = GetLocalStorage(itemsPerPageStorageName, itemsPerPageDefault)+2;
+				var itemsRound = GetLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)+2;
 				
 				for(var i=0; i<=itemsRound; i++)
 				{
 					var calculate = $scope.totalItems - $scope.itemsPerPage + i;
-					if(calculate % GetLocalStorage(itemsPerPageStorageName, itemsPerPageDefault) == 0)
+					if(calculate % GetLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault) == 0)
 					{
 						$scope.lastNode = calculate;
 						break;

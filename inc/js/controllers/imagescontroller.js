@@ -2,14 +2,21 @@
   'use strict';
 
   app.controller('ImagesController',
-    function ImagesController($scope, $timeout, imagesService)
+    function ImagesController($scope, $routeParams, $timeout, $location, imagesService)
 	{
 		$scope.imagescount = 0;
 		$scope.dataLoading = true;
+		$scope.changeFancyBoxImage = changeFancyBoxImage;
 		$scope.url="";
 	
 		$scope.$on('$routeChangeSuccess',function(evt, absNewUrl, absOldUrl) {
-		   getImages();
+			if($routeParams.imageName) {
+				$("#popupOnStartLink").attr("href", $scope.url+$routeParams.imageName);
+				StartFancyBox();
+				$("#popupOnStartLink").trigger("click");
+				
+			}
+			getImages();
 		});
 		
 		$scope.showNoResults = function() {
@@ -17,6 +24,10 @@
 				return $scope.allCount == 0;
 			else
 				return false;
+		}
+		
+		function changeFancyBoxImage(image) {
+			$location.search({imageName: image});
 		}
 		
 		function getImages() {
