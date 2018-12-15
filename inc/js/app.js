@@ -9,6 +9,9 @@ var app = {};
 			templateUrl: 'templates/images.html',
 			controller: 'ImagesController',
 			reloadOnSearch: false
+		})
+		.when('/about', {
+			templateUrl: 'templates/about.html'
 		});
 
 	$routeProvider.otherwise({
