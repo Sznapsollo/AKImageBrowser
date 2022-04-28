@@ -2,7 +2,7 @@
 
 ## About
 
-AKImageBrowser is quick deployable web image browser/gallery that will display images from given folder. It bases on php (backend side) and angular (frontend side).
+AKImageBrowser is quick deployable web image browser/gallery that will display images from given folder. It bases on php (backend side) and Angular JS (frontend side).
 
 Working example: <a href="http://cultrides.com/test/Github/AKImageBrowser/" target="_blank">AKImageBrowser example</a>
 
