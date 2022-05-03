@@ -35,8 +35,9 @@ function manageHash(href) {
 }
 
 function getScope() {
-    var sel = '.pageContent';
-    return angular.element(sel).scope();
+    // var sel = '.pageContent';
+    // return angular.element(sel).scope();
+	return null
 }
 
 function StartFancyBox()
@@ -46,15 +47,15 @@ function StartFancyBox()
 		afterShow: function() {
 			manageHash(this.href);
 			
-			$('.fancybox-wrap').swipe({
-				swipe : function(event, direction) {
-					if (direction === 'left' || direction === 'up') {
-						$.fancybox.prev( direction );
-					} else {
-						$.fancybox.next( direction );
-					}
-				}
-			});
+			// $('.fancybox-wrap').swipe({
+			// 	swipe : function(event, direction) {
+			// 		if (direction === 'left' || direction === 'up') {
+			// 			$.fancybox.prev( direction );
+			// 		} else {
+			// 			$.fancybox.next( direction );
+			// 		}
+			// 	}
+			// });
 			if ( applePie() ) { $('body').css({'position': 'fixed'}); } 
 		},
 		afterClose: function() {

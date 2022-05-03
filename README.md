@@ -30,3 +30,8 @@ Wanna touch base? office@webproject.waw.pl
 ## Example Screen
 
 ![Image of AKImageBrowser #1](http://cultrides.com/test/Github/AKImageBrowserDemo20181124.JPG)
+
+## todo
+- lazy load
+- swipe
+- refresh countdown

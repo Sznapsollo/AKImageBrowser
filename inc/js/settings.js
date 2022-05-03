@@ -12,6 +12,6 @@ var settings = function() {
 		hideDescriptionsStorageDefault: 100,
 		autoRefreshStorageName: 'autoRefresh',
 		autoRefreshIntervalStorageName: 'autoRefreshInterval',
-		autoRefreshIntervalDefault: 120
+		autoRefreshIntervalDefault: 0
 	}
 }();

@@ -73,7 +73,7 @@
 			if(!canProceed())
 				return;
 		
-			self.timerAutoRefresh = $timeout(fn, 1000 * timeInterval());
+			timerAutoRefresh = setTimeout(fn, 1000 * timeInterval());
 			
 			return self.timerAutoRefresh.then(function(data) {
 				checkInterval(fn, timeInterval, canProceed);
