@@ -47,5 +47,40 @@ const setLocalStorage = function(name, value) {
 	localStorage[name] = value;
 }
 
-app.provide('getLocalStorage', getLocalStorage)
-app.provide('setLocalStorage', setLocalStorage)
+const secondsToHms = function(d) {
+	d = Number(d);
+	var h = Math.floor(d / 3600);
+	var m = Math.floor(d % 3600 / 60);
+	var s = Math.floor(d % 3600 % 60);
+
+	if(!h & !m && !s) {
+		return "Never"
+	}
+
+	var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+	var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+	var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+	return hDisplay + mDisplay + sDisplay; 
+}
+
+const convertUniXDate = function(unixTimestamp) {
+	try {
+		var date = new Date(unixTimestamp*1000);
+		// console.log("Unix Timestamp:",unixTimestamp)
+		// console.log("Date Timestamp:",date.getTime())
+		// console.log(date)
+		return (""+date.getDate()+
+				"/"+(date.getMonth()+1)+
+				"/"+date.getFullYear()+
+				" "+date.getHours()+
+				":"+date.getMinutes()+
+				":"+date.getSeconds());
+	} catch(e) {
+		console.warn('convertUniXDate', unixTimestamp)
+	}
+}
+
+app.provide('getLocalStorage', getLocalStorage);
+app.provide('setLocalStorage', setLocalStorage);
+app.provide('secondsToHms', secondsToHms);
+app.provide('convertUniXDate', convertUniXDate);

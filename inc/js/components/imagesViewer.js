@@ -2,18 +2,18 @@ const ImagesViewer = {
 	name: 'imagesViewer',
 	template: `
 		<div class="pageContent">
-	
+			<div v-if="timeRemainingLabel" style="width: 100%;color: #666666; padding: 10px;">Refresh in: {{timeRemainingLabel}}</div>
 			<div v-if="!noResults">
 				<pager-component></pager-component>
 			</div>
 			
 			<div class="articleMin" v-for="image in imagesList">
-				<a class="fancybox" v-bind:title="image.name + ' ' + image.changeDate" data-fancybox-type="image" data-fancybox-group="images" v-bind:href="url+image.name">
+				<a class="fancybox" v-bind:title="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox-type="image" data-fancybox-group="images" v-bind:href="url+image.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
 						<div>
 							<img v-bind:src="url + image.name" class="notInitiated" src1="inc/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
 						</div>
-						<div v-if="showFileTimes && showDescriptions"style="word-wrap: break-word">{{image.changeDate * 1000}}</div>
+						<div v-if="showFileTimes && showDescriptions"style="word-wrap: break-word">{{convertUniXDate(image.changeDate)}}</div>
 						<div v-if="showFileNames && showDescriptions"style="word-wrap: break-word">{{image.name}}</div>
 					</div>
 				</a>
@@ -35,6 +35,9 @@ const ImagesViewer = {
 		const route = VueRouter.useRoute()
 		const router = VueRouter.useRouter()
 
+		let secondsToHms = Vue.inject('secondsToHms');
+		let convertUniXDate = Vue.inject('convertUniXDate');
+
 		const dataLoading = Vue.ref(false)
 		const allCount = Vue.ref(0)
 		const imagesList = Vue.ref([])
@@ -45,7 +48,9 @@ const ImagesViewer = {
 		const showFileNames = Vue.ref(true);
 		const showDescriptions = Vue.ref(true)
 		const url = Vue.ref('')
+		const timeRemainingLabel = Vue.ref(null)
 		
+		let timeRemaining = null
 		let imageWidth = parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault));
 		let hideDescriptionsBelow = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
 		const imageAreaStyle = Vue.ref({})
@@ -58,6 +63,7 @@ const ImagesViewer = {
 		let autoRefresh = null
 
 		let timerAutoRefresh
+		let timerUpdateTimeLeft
 		
 		function initializeData() {
 			if(route.params.imageName) {
@@ -75,7 +81,10 @@ const ImagesViewer = {
 				clearTimeout(timerAutoRefresh);
 			}
 		
+			timeRemaining = autoRefreshInterval
+
 			checkInterval(timerAutoRefresh, reloadRoute, autoRefreshInterval);
+			checkInterval(timerUpdateTimeLeft, updateTimeLeft, 1);
 		};
 
 		function checkInterval(timer, fn, timeInterval) {
@@ -140,6 +149,11 @@ const ImagesViewer = {
 			router.go()
 		}
 
+		const updateTimeLeft = function() {
+			timeRemaining--;
+			timeRemainingLabel.value = secondsToHms(timeRemaining)
+		}
+
 		Vue.onMounted(function() {
 			console.log('ImagesViewer mounted')
 
@@ -184,6 +198,7 @@ const ImagesViewer = {
 
 		return {
 			allCount,
+			convertUniXDate,
 			dataLoading,
 			imageAreaStyle,
 			imagesList,
@@ -192,6 +207,7 @@ const ImagesViewer = {
 			showDescriptions,
 			showFileNames,
 			showFileTimes,
+			timeRemainingLabel,
 			url
 		}
 	}

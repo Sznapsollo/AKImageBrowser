@@ -80,6 +80,7 @@ app.component('settings-component' , {
 
 		let mittEventBus = Vue.inject('mittEventBus');
 		let getLocalStorage = Vue.inject('getLocalStorage');
+		let secondsToHms = Vue.inject('secondsToHms');
 
 		const imageWidth = Vue.ref(parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault)));
 		const fileTypes = Vue.ref(getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault));
@@ -113,22 +114,6 @@ app.component('settings-component' , {
 
 		const resetImageWidth = function() {
 			imageWidth.value = settings.imagesWidthDefault;
-		}
-
-		function secondsToHms(d) {
-			d = Number(d);
-			var h = Math.floor(d / 3600);
-			var m = Math.floor(d % 3600 / 60);
-			var s = Math.floor(d % 3600 % 60);
-		
-			if(!h & !m && !s) {
-				return "Never"
-			}
-
-			var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-			var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-			var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-			return hDisplay + mDisplay + sDisplay; 
 		}
 
 		const translateRefreshInterval = function() {

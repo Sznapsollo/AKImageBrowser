@@ -34,4 +34,5 @@ Wanna touch base? office@webproject.waw.pl
 ## todo
 - lazy load
 - swipe
-- refresh countdown
+- refresh countdown - not refresh when not active
+- imageName url handling
