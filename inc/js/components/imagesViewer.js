@@ -11,7 +11,7 @@ const ImagesViewer = {
 				<a class="fancybox" v-bind:title="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox-type="image" data-fancybox-group="images" v-bind:href="url+image.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
 						<div>
-							<img v-bind:src="url + image.name" class="notInitiated" src1="inc/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
+							<img v-bind:data-src="url + image.name" class="notInitiated" class="lazyload" src="inc/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
 						</div>
 						<div v-if="showFileTimes && showDescriptions"style="word-wrap: break-word">{{convertUniXDate(image.changeDate)}}</div>
 						<div v-if="showFileNames && showDescriptions"style="word-wrap: break-word">{{image.name}}</div>
@@ -49,7 +49,7 @@ const ImagesViewer = {
 		const showDescriptions = Vue.ref(true)
 		const url = Vue.ref('')
 		const timeRemainingLabel = Vue.ref(null)
-		
+
 		let timeRemaining = null
 		let imageWidth = parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault));
 		let hideDescriptionsBelow = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
@@ -86,6 +86,22 @@ const ImagesViewer = {
 			checkInterval(timerAutoRefresh, reloadRoute, autoRefreshInterval);
 			checkInterval(timerUpdateTimeLeft, updateTimeLeft, 1);
 		};
+
+		function changeFancyBoxImage(args) {
+			if(!args) {args = {};};
+			let href = args.href
+			if(!href) {
+				return
+			}
+			router.push({
+				name: 'images',
+				params: { 
+					startIndex: route.params.startIndex,
+					itemsPerPage: route.params.itemsPerPage,
+					imageName: href
+				}
+			})
+		}
 
 		function checkInterval(timer, fn, timeInterval) {
 			if(!autoRefresh) {
@@ -156,6 +172,10 @@ const ImagesViewer = {
 
 		Vue.onMounted(function() {
 			console.log('ImagesViewer mounted')
+
+			mittEventBus.on('changeFancyBoxImage', (args) => {
+				changeFancyBoxImage(args)
+			});
 
 			autoRefreshInterval = parseInt(getLocalStorage(settings.autoRefreshIntervalStorageName, settings.autoRefreshIntervalDefault));
 			autoRefresh = getLocalStorage(settings.autoRefreshStorageName, false);

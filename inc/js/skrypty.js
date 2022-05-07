@@ -26,12 +26,11 @@ function applePie() {
 
 
 function manageHash(href) {
-
-	var imagesScope = getScope();
-	if(imagesScope && imagesScope.changeFancyBoxImage) {
-		imagesScope.changeFancyBoxImage(href);
-		imagesScope.$apply();
+	if(typeof mittEventBus === 'undefined') {
+		return
 	}
+
+	mittEventBus.emit('changeFancyBoxImage', {href: href});
 }
 
 function getScope() {
