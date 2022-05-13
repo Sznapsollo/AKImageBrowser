@@ -33,4 +33,3 @@ Wanna touch base? office@webproject.waw.pl
 
 ## todo
 - swipe
-- refresh countdown - not refresh when not active

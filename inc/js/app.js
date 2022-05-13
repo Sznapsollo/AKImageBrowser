@@ -47,14 +47,16 @@ const setLocalStorage = function(name, value) {
 	localStorage[name] = value;
 }
 
-const secondsToHms = function(d) {
+const secondsToHms = function(d, emptyValue) {
 	d = Number(d);
 	var h = Math.floor(d / 3600);
 	var m = Math.floor(d % 3600 / 60);
 	var s = Math.floor(d % 3600 % 60);
 
+	emptyValue = emptyValue != null ? emptyValue : 'Never'
+
 	if(!h & !m && !s) {
-		return "Never"
+		return emptyValue
 	}
 
 	var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";

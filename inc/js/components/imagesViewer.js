@@ -2,7 +2,7 @@ const ImagesViewer = {
 	name: 'imagesViewer',
 	template: `
 		<div class="pageContent">
-			<div v-if="timeRemainingLabel" style="width: 100%;color: #666666; padding: 10px;">Refresh in: {{timeRemainingLabel}}</div>
+			<div v-if="timeRemainingLabel != null" style="top: 10px;position: fixed;left: 50%;margin-left: -100px;width: 200px; border-radius: 10px;background-color:#ffffff80;z-index: 9999;color: #666666; padding: 10px;">Refresh in: {{timeRemainingLabel}}</div>
 			<div v-if="!noResults">
 				<pager-component></pager-component>
 			</div>
@@ -72,6 +72,17 @@ const ImagesViewer = {
 				$("#popupOnStartLink").trigger("click");
 				
 			}
+
+			showFileTimes.value = getLocalStorage(settings.fileTimesStorageName, true);
+			showFileNames.value = getLocalStorage(settings.fileNamesStorageName, true);
+			imageWidth = parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault));
+			hideDescriptionsBelow = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
+			showDescriptions.value = (imageWidth > hideDescriptionsBelow);
+
+			imageAreaStyle.value = {width: imageWidth + 'px'}
+			imagesList.value = []
+			dataLoading.value = true;
+			
 			getImages();
 		}
 
@@ -83,7 +94,7 @@ const ImagesViewer = {
 		
 			timeRemaining = autoRefreshInterval
 
-			checkInterval(timerAutoRefresh, reloadRoute, autoRefreshInterval);
+			checkInterval(timerAutoRefresh, function() { getImages(); timeRemaining = autoRefreshInterval; }, autoRefreshInterval);
 			checkInterval(timerUpdateTimeLeft, updateTimeLeft, 1);
 		};
 
@@ -115,16 +126,7 @@ const ImagesViewer = {
 			});
 		}
 
-		function getImages() {
-			showFileTimes.value = getLocalStorage(settings.fileTimesStorageName, true);
-			showFileNames.value = getLocalStorage(settings.fileNamesStorageName, true);
-			imageWidth = parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault));
-			hideDescriptionsBelow = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
-			showDescriptions.value = (imageWidth > hideDescriptionsBelow);
-
-			imageAreaStyle.value = {width: imageWidth + 'px'}
-
-			dataLoading.value = true;
+		function getImages(callback) {
 
 			let fileTypes = getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault);
 
@@ -135,7 +137,6 @@ const ImagesViewer = {
 				fileTypes: fileTypes 
 			}
 
-			imagesList.value = []
 			axios.post(('./inc/images.php'), data)
 				.then(function (dataResponse) {
 					viewerMessage.value = null
@@ -161,13 +162,13 @@ const ImagesViewer = {
 			);
 		}
 
-		const reloadRoute = function() {
-			router.go()
-		}
+		// const reloadRoute = function() {
+		// 	router.go()
+		// }
 
 		const updateTimeLeft = function() {
 			timeRemaining--;
-			timeRemainingLabel.value = secondsToHms(timeRemaining)
+			timeRemainingLabel.value = secondsToHms(timeRemaining, "now")
 		}
 
 		Vue.onMounted(function() {
