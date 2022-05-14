@@ -2,13 +2,13 @@ const ImagesViewer = {
 	name: 'imagesViewer',
 	template: `
 		<div class="pageContent">
-			<div v-if="timeRemainingLabel != null" style="top: 10px;position: fixed;left: 50%;margin-left: -100px;width: 200px; border-radius: 10px;background-color:#ffffff80;z-index: 9999;color: #666666; padding: 10px;">Refresh in: {{timeRemainingLabel}}</div>
+			<div v-if="timeRemainingLabel != null" style="top: 10px;position: fixed;left: 50%;margin-left: -150px;width: 300px; border-radius: 10px;background-color:#ffffff80;z-index: 9999;color: #666666; padding: 10px;">Refresh in: {{timeRemainingLabel}}</div>
 			<div v-if="!noResults">
 				<pager-component></pager-component>
 			</div>
 			
 			<div class="articleMin" v-for="image in imagesList">
-				<a class="fancybox" v-bind:title="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox-type="image" data-fancybox-group="images" v-bind:href="url+image.name">
+				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url+image.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
 						<div>
 							<img v-bind:data-src="url + image.name" class="notInitiated" class="lazyload" src="inc/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
@@ -20,7 +20,6 @@ const ImagesViewer = {
 			</div>
 			
 			<i v-if="dataLoading" class="fa fa-spinner fa-4x fa-spin marginTop10 marginBottom10"></i>
-			<a id="popupOnStartLink" class="" style="display: none" title="" data-fancybox-type="image" data-fancybox-group="images_popup" href="">&nbsp;</a>
 
 			<div v-if="noResults" class="noResults">There are no results for given search criteria. Perhaps folder is empty or it does not contain any image types defined in options.</div>
 			<div v-if="viewerMessage" class="noResults">{{viewerMessage}}</div>
@@ -66,11 +65,10 @@ const ImagesViewer = {
 		let timerUpdateTimeLeft
 		
 		function initializeData() {
-			if(route.params.imageName) {
-				$("#popupOnStartLink").attr("href", url.value + route.params.imageName);
-				StartFancyBox();
-				$("#popupOnStartLink").trigger("click");
-				
+			var getImgsCalback = function() {
+				if(route.params.imageName) {
+					$('a[href$="'+(url.value + route.params.imageName)+'"]')[0].click()
+				}
 			}
 
 			showFileTimes.value = getLocalStorage(settings.fileTimesStorageName, true);
@@ -83,7 +81,7 @@ const ImagesViewer = {
 			imagesList.value = []
 			dataLoading.value = true;
 			
-			getImages();
+			getImages(getImgsCalback);
 		}
 
 		function initAutoRefresh()
@@ -101,16 +99,18 @@ const ImagesViewer = {
 		function changeFancyBoxImage(args) {
 			if(!args) {args = {};};
 			let href = args.href
-			if(!href) {
-				return
+			
+			let params = { 
+				startIndex: route.params.startIndex,
+				itemsPerPage: route.params.itemsPerPage
+			}
+			
+			if(href) {
+				params.imageName = href
 			}
 			router.push({
 				name: 'images',
-				params: { 
-					startIndex: route.params.startIndex,
-					itemsPerPage: route.params.itemsPerPage,
-					imageName: href
-				}
+				params
 			})
 		}
 
@@ -152,6 +152,9 @@ const ImagesViewer = {
 					{
 						mittEventBus.emit('calculateImagesPaging', {allCount: allCount.value})
 						StartFancyBox();
+						if(callback) {
+							callback()
+						}
 					}, 100); 
 				})
 				.catch(function (error) {
