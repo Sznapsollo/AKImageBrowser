@@ -1,5 +1,8 @@
 $(document).ready(function()
 {
+	document.removeEventListener('keydown', manageKeyDown);
+	document.addEventListener('keydown', manageKeyDown);
+
 	$(window).scroll(function() {
 		if ($(this).scrollTop() >= 50) 
 		{        
@@ -17,6 +20,17 @@ $(document).ready(function()
 		}, 500);
 	});
 });
+
+function manageKeyDown(e) {
+	if(!e || !e.key || !window) {
+		return
+	}
+	if(typeof mittEventBus === 'undefined') {
+		return
+	}
+
+	mittEventBus.emit('handleKeyDownAction', {key: e.key});
+}
 
 function applePie() {
 	return ( navigator.userAgent.match(/(iPhone|iPod|iPad)/i) );
@@ -91,22 +105,6 @@ function StartFancyBox(groupName)
 	// 		if ( applePie() ) { $('body').css({'position': ''}); }
 	// 	}
 	//  });
-}
-
-function GetLocalStorage(index, defaultValue) {
-	if(localStorage[index] == undefined)
-		return defaultValue;
-	else {
-	
-		if(typeof defaultValue === 'boolean')
-			return JSON.parse(localStorage[index]);
-		else
-			return localStorage[index];
-	}
-}
-
-function SetLocalStorage(name, value) {
-    localStorage[name] = value;
 }
 
 function CrankLogoUp() {	

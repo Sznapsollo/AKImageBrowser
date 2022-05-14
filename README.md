@@ -32,4 +32,5 @@ Wanna touch base? office@webproject.waw.pl
 ![Image of AKImageBrowser #1](http://cultrides.com/test/Github/AKImageBrowserDemo20181124.JPG)
 
 ## todo
-- swipe
+...
+

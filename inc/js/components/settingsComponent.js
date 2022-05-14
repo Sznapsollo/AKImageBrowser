@@ -142,6 +142,14 @@ app.component('settings-component' , {
 					args = {};
 				}
 
+				imageWidth.value = parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault));
+				fileTypes.value = getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault);
+				showFileTimes.value = getLocalStorage(settings.fileTimesStorageName, true);
+				showFileNames.value = getLocalStorage(settings.fileNamesStorageName, true);
+				autoRefresh.value = getLocalStorage(settings.autoRefreshStorageName, false);
+				autoRefreshInterval.value = parseInt(getLocalStorage(settings.autoRefreshIntervalStorageName, settings.autoRefreshIntervalDefault));
+				hideDescriptionsBelow.value = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
+
 				maxWidth.value = $("#middleSection .inner").width();
 				$('#settingsModal').modal('show');
 			})

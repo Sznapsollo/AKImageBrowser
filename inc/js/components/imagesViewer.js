@@ -1,6 +1,8 @@
 const ImagesViewer = { 
 	name: 'imagesViewer',
 	template: `
+		<button type="button" @click="zoomIn" class="btn btn-secondary btn-lg zoomInButton" id="zoomInButton" >+</button>
+		<button type="button" @click="zoomOut" class="btn btn-secondary btn-lg zoomOutButton" id="zoomOutButton" >-</button>
 		<div class="pageContent">
 			<div v-if="timeRemainingLabel != null" style="top: 10px;position: fixed;left: 50%;margin-left: -150px;width: 300px; border-radius: 10px;background-color:#ffffff80;z-index: 9999;color: #666666; padding: 10px;">Refresh in: {{timeRemainingLabel}}</div>
 			<div v-if="!noResults">
@@ -36,6 +38,8 @@ const ImagesViewer = {
 
 		let secondsToHms = Vue.inject('secondsToHms');
 		let convertUniXDate = Vue.inject('convertUniXDate');
+		let getLocalStorage = Vue.inject('getLocalStorage');
+		let setLocalStorage = Vue.inject('setLocalStorage');
 
 		const dataLoading = Vue.ref(false)
 		const allCount = Vue.ref(0)
@@ -122,7 +126,7 @@ const ImagesViewer = {
 			new Promise(function(resolve, reject) {
 				timer = setTimeout(function() {fn(); resolve()}, 1000 * timeInterval);
 			}).then(function() {
-				checkInterval(timer, fn, timeInterval)
+				checkInterval(timer, fn, timeInterval);
 			});
 		}
 
@@ -145,12 +149,12 @@ const ImagesViewer = {
 					allCount.value = dataResponse.data.allCount;
 
 					if(!allCount.value) {
-						noResults.value = true
+						noResults.value = true;
 					}
 
 					setTimeout(function()
 					{
-						mittEventBus.emit('calculateImagesPaging', {allCount: allCount.value})
+						mittEventBus.emit('calculateImagesPaging', {allCount: allCount.value});
 						StartFancyBox();
 						if(callback) {
 							callback()
@@ -159,7 +163,7 @@ const ImagesViewer = {
 				})
 				.catch(function (error) {
 					dataLoading.value = false;
-					viewerMessage.value = "Images read error"
+					viewerMessage.value = "Images read error";
 					console.log('Images read error');
 				}
 			);
@@ -174,11 +178,45 @@ const ImagesViewer = {
 			timeRemainingLabel.value = secondsToHms(timeRemaining, "now")
 		}
 
+		const zoomIn = function() {
+			imageWidth += 10;
+			imageAreaStyle.value = {width: imageWidth + 'px'};
+			setLocalStorage(settings.imagesWidthStorageName, imageWidth);
+		}
+
+		const zoomOut = function() {
+			if(imageWidth <=  50) {
+				return
+			}
+			imageWidth -= 10;
+			imageAreaStyle.value = {width: imageWidth + 'px'};
+			setLocalStorage(settings.imagesWidthStorageName, imageWidth);
+		}
+
+		const handleKeyDownAction = function (args) {
+			if(!args) {ags = {};};
+			let key = args.key
+			switch (key) {
+				case '=':
+				case '+':
+					zoomIn()
+					break
+				case '_':
+				case '-':
+					zoomOut()
+					break
+			}
+		}
+
 		Vue.onMounted(function() {
 			console.log('ImagesViewer mounted')
 
 			mittEventBus.on('changeFancyBoxImage', (args) => {
-				changeFancyBoxImage(args)
+				changeFancyBoxImage(args);
+			});
+
+			mittEventBus.on('handleKeyDownAction', (args) => {
+				handleKeyDownAction(args);
 			});
 
 			autoRefreshInterval = parseInt(getLocalStorage(settings.autoRefreshIntervalStorageName, settings.autoRefreshIntervalDefault));
@@ -232,7 +270,9 @@ const ImagesViewer = {
 			showFileNames,
 			showFileTimes,
 			timeRemainingLabel,
-			url
+			url,
+			zoomIn,
+			zoomOut
 		}
 	}
 }

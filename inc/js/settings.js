@@ -6,7 +6,7 @@ var settings = function() {
 		fileNamesStorageName: 'showFileNames',
 		itemsPerPageDefault: 48,
 		itemsPerPageStorageName: 'itemsPerPage',
-		imagesWidthDefault: 150,
+		imagesWidthDefault: 200,
 		imagesWidthStorageName: 'imageWidth',
 		hideDescriptionsStorageName: 'hideDescriptionsBelowWidth',
 		hideDescriptionsStorageDefault: 100,

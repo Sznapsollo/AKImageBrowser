@@ -139,3 +139,20 @@ A:hover {
     color: #e8e9ea;
     background: #3A5795;
 }
+
+.zoomInButton,
+.zoomOutButton {
+	z-index:100;
+	position: fixed;
+	top: 70px;
+	right: 10px;
+	font-size: 8pt;
+	width: 30px;
+	height: 30px;
+	padding: 0px;
+	opacity: 0.6;
+}
+
+.zoomOutButton {
+	top: 105px;
+}
