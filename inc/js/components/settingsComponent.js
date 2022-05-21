@@ -81,8 +81,9 @@ app.component('settings-component' , {
 		let mittEventBus = Vue.inject('mittEventBus');
 		let getLocalStorage = Vue.inject('getLocalStorage');
 		let secondsToHms = Vue.inject('secondsToHms');
+		let getDefaultImageWidth = Vue.inject('getDefaultImageWidth');
 
-		const imageWidth = Vue.ref(parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault)));
+		const imageWidth = Vue.ref(parseInt(getLocalStorage(settings.imagesWidthStorageName, getDefaultImageWidth())));
 		const fileTypes = Vue.ref(getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault));
 		const showFileTimes = Vue.ref(getLocalStorage(settings.fileTimesStorageName, true));
 		const showFileNames = Vue.ref(getLocalStorage(settings.fileNamesStorageName, true));
@@ -113,7 +114,7 @@ app.component('settings-component' , {
 		}
 
 		const resetImageWidth = function() {
-			imageWidth.value = settings.imagesWidthDefault;
+			imageWidth.value = getDefaultImageWidth();
 		}
 
 		const translateRefreshInterval = function() {
@@ -142,7 +143,7 @@ app.component('settings-component' , {
 					args = {};
 				}
 
-				imageWidth.value = parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault));
+				imageWidth.value = parseInt(getLocalStorage(settings.imagesWidthStorageName, getDefaultImageWidth()));
 				fileTypes.value = getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault);
 				showFileTimes.value = getLocalStorage(settings.fileTimesStorageName, true);
 				showFileNames.value = getLocalStorage(settings.fileNamesStorageName, true);

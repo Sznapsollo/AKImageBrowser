@@ -13,7 +13,7 @@ var app = Vue.createApp({
 		}
 
 		Vue.onMounted(function() {
-			console.log('App mounted')
+			console.log('App mounted');
 		})
 
 		return {
@@ -82,7 +82,18 @@ const convertUniXDate = function(unixTimestamp) {
 	}
 }
 
+const getDefaultImageWidth = function() {
+	if(typeof settings !== 'undefined' && settings.imagesWidthDefault) {
+		if(window && window.innerWidth && window.innerWidth <= 500) {
+			return window.innerWidth - 60;
+		}
+		return settings.imagesWidthDefault
+	}
+	return 200
+}
+
 app.provide('getLocalStorage', getLocalStorage);
 app.provide('setLocalStorage', setLocalStorage);
 app.provide('secondsToHms', secondsToHms);
 app.provide('convertUniXDate', convertUniXDate);
+app.provide('getDefaultImageWidth', getDefaultImageWidth)

@@ -76,6 +76,10 @@ A:hover {
 	margin-bottom: 10px;
 }
 
+.loadingWrapper {
+	width: 100%; padding: 10px; text-align: center;
+}
+
 .pageHint
 {
 	margin: 20px 0 20px 0;
@@ -97,9 +101,9 @@ A:hover {
 	width: 100%;
 }
 
-.articleMin 
+.imageItem 
 {
-    float: left;
+    display: inline-block;
     margin: 0 15px 15px 0;
 }
 

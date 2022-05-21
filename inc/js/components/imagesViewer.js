@@ -1,19 +1,33 @@
 const ImagesViewer = { 
 	name: 'imagesViewer',
 	template: `
-		<button type="button" @click="zoomIn" class="btn btn-secondary btn-lg zoomInButton" id="zoomInButton" >+</button>
-		<button type="button" @click="zoomOut" class="btn btn-secondary btn-lg zoomOutButton" id="zoomOutButton" >-</button>
+		<button type="button" class="btn btn-secondary zoomInButton" @click="zoomIn" id="zoomInButton">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-zoom-in" viewBox="0 0 16 16">
+				<path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"></path>
+				<path d="M10.344 11.742c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1 6.538 6.538 0 0 1-1.398 1.4z"></path>
+				<path fill-rule="evenodd" d="M6.5 3a.5.5 0 0 1 .5.5V6h2.5a.5.5 0 0 1 0 1H7v2.5a.5.5 0 0 1-1 0V7H3.5a.5.5 0 0 1 0-1H6V3.5a.5.5 0 0 1 .5-.5z"></path>
+			</svg>
+		</button>
+		<button type="button" class="btn btn-secondary zoomOutButton" @click="zoomOut" id="zoomOutButton">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-zoom-out" viewBox="0 0 16 16">
+				<path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"></path>
+				<path d="M10.344 11.742c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1 6.538 6.538 0 0 1-1.398 1.4z"></path>
+				<path fill-rule="evenodd" d="M3 6.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"></path>
+			</svg>
+		</button>
 		<div class="pageContent">
 			<div v-if="timeRemainingLabel != null" style="top: 10px;position: fixed;left: 50%;margin-left: -150px;width: 300px; border-radius: 10px;background-color:#ffffff80;z-index: 9999;color: #666666; padding: 10px;">Refresh in: {{timeRemainingLabel}}</div>
 			<div v-if="!noResults">
 				<pager-component></pager-component>
 			</div>
 			
-			<div class="articleMin" v-for="image in imagesList">
+			<div v-if="dataLoading" class="loadingWrapper marginTop10 marginBottom10"><img src="inc/imgs/spinner.gif" style="width: 30px;"/></div>
+
+			<div class="imageItem" v-for="image in imagesList">
 				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url+image.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
 						<div>
-							<img v-bind:data-src="url + image.name" class="notInitiated" class="lazyload" src="inc/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
+							<img v-bind:data-src="url + image.name" class="notInitiated" class="lazyload" src="inc/imgs/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
 						</div>
 						<div v-if="showFileTimes && showDescriptions"style="word-wrap: break-word">{{convertUniXDate(image.changeDate)}}</div>
 						<div v-if="showFileNames && showDescriptions"style="word-wrap: break-word">{{image.name}}</div>
@@ -21,8 +35,6 @@ const ImagesViewer = {
 				</a>
 			</div>
 			
-			<i v-if="dataLoading" class="fa fa-spinner fa-4x fa-spin marginTop10 marginBottom10"></i>
-
 			<div v-if="noResults" class="noResults">There are no results for given search criteria. Perhaps folder is empty or it does not contain any image types defined in options.</div>
 			<div v-if="viewerMessage" class="noResults">{{viewerMessage}}</div>
 
@@ -40,6 +52,7 @@ const ImagesViewer = {
 		let convertUniXDate = Vue.inject('convertUniXDate');
 		let getLocalStorage = Vue.inject('getLocalStorage');
 		let setLocalStorage = Vue.inject('setLocalStorage');
+		let getDefaultImageWidth = Vue.inject('getDefaultImageWidth');
 
 		const dataLoading = Vue.ref(false)
 		const allCount = Vue.ref(0)
@@ -54,7 +67,7 @@ const ImagesViewer = {
 		const timeRemainingLabel = Vue.ref(null)
 
 		let timeRemaining = null
-		let imageWidth = parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault));
+		let imageWidth = parseInt(getLocalStorage(settings.imagesWidthStorageName, getDefaultImageWidth()));
 		let hideDescriptionsBelow = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
 		const imageAreaStyle = Vue.ref({})
 
@@ -77,7 +90,7 @@ const ImagesViewer = {
 
 			showFileTimes.value = getLocalStorage(settings.fileTimesStorageName, true);
 			showFileNames.value = getLocalStorage(settings.fileNamesStorageName, true);
-			imageWidth = parseInt(getLocalStorage(settings.imagesWidthStorageName, settings.imagesWidthDefault));
+			imageWidth = parseInt(getLocalStorage(settings.imagesWidthStorageName, getDefaultImageWidth()));
 			hideDescriptionsBelow = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
 			showDescriptions.value = (imageWidth > hideDescriptionsBelow);
 
