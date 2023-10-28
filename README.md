@@ -12,6 +12,8 @@ Youtube quick vid showing way to deploy and use: <a href="https://youtu.be/LktPT
 
 The idea is to copy contents of AKImageBrowser to some webserver folder that contains images. Then open this folder address in webbrowser which will allow to browse these images in a bit more friendly manner.
 
+There is no need to compile or build anything. All is prepared to be copied.
+
 AKImageBrowser has some features that make image browsing a bit more pleasant:
 - paging with options to choose how many images per page should be displayed
 - lazy loading -> images will load when user actually displays them
