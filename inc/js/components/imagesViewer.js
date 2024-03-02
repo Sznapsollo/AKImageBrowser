@@ -151,11 +151,20 @@ const ImagesViewer = {
 				receive: 'yes', 
 				startIndex: route.params.startIndex, 
 				itemsPerPage: route.params.itemsPerPage, 
-				fileTypes: fileTypes 
+				fileTypes: fileTypes,
+				secretWord: sessionStorage.getItem("secretWord")
 			}
 
 			axios.post(('./inc/images.php'), data)
 				.then(function (dataResponse) {
+
+					if(dataResponse?.data?.status === -2) {
+						let secretWord = prompt('What is secred word');
+						sessionStorage.setItem("secretWord", secretWord);
+						getImages(callback);
+						return
+					}
+
 					viewerMessage.value = null
 					dataLoading.value = false;
 					imagesList.value = dataResponse.data.images;

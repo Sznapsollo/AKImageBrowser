@@ -12,12 +12,18 @@ const HomeComponent = {
 		let getLocalStorage = Vue.inject('getLocalStorage');
 		
 		Vue.onMounted(function() {
-			console.log('HomeComponent mounted')
+			// console.log('HomeComponent mounted')
 
 			// redirect
 			// get defaul values from settings and cached data
-			router.push({ name: 'images', params: {startIndex: 0, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)} })
-		})
+			router.push({ name: 'images', params: {startIndex: 0, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)} });
+		});
+
+		Vue.watch(route, () => {
+			if(route.name === 'home') {
+				router.push({ name: 'images', params: {startIndex: 0, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)} });
+			}
+		});
 
 		return {
 			componentName

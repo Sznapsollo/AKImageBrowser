@@ -34,6 +34,17 @@ if(isset($input->receive))
 	if(isset($input->fileTypes))
 		$settings->fileTypes = $input->fileTypes;
 	
+	if(isset($settings->secretWord)) {
+		if(isset($input->secretWord) && $settings->secretWord == $input->secretWord) {}
+		else {
+			$returnObject = new stdClass();
+			$returnObject->status = -2;
+			
+			echo json_encode($returnObject);
+			return;
+		}
+	}
+
 	if($settings->deleteOlderFiles) {
 		$files = glob($pathPrefix."*");
 		$now   = time();
@@ -60,7 +71,13 @@ if(isset($input->receive))
 	
 	// sort files by last modified date
 	usort($files, function($x, $y) use($pathPrefix) {
-		return filemtime($pathPrefix.$x) < filemtime($pathPrefix.$y);
+		if(filemtime($pathPrefix.$x) < filemtime($pathPrefix.$y)) {
+			return 1;
+		} else if(filemtime($pathPrefix.$x) < filemtime($pathPrefix.$y)) {
+			return 0;
+		} else {
+			return -1;
+		}
 	});
 
 	$index = 0;

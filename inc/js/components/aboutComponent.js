@@ -16,6 +16,8 @@ const AboutComponent = {
 			<li>optional showing image name and image change date in images list</li>
 			<li>option to hide image descriptions whenl image size lower than specified value</li>
 			<li>option to autorefresh gallery, refresh interval can be changed</li>
+			<li>(settings file) option to hide images behind some secret key - it is not really any security measure but comes in handy sometimes</li>
+			<li>(settings file) option to auto delete older files</li>
 		</ul>
 	</div>
 	`,
