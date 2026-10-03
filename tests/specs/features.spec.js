@@ -173,6 +173,26 @@ test.describe('navigation memory and keyboard', () => {
 		await expect(page).toHaveURL(/#\/about$/);
 	});
 
+	test('a dropped gallery request is retried once', async ({ page }) => {
+		let aborted = 0;
+		await page.route('**/inc/images.php', route => {
+			if (aborted++ === 0) {
+				return route.abort('connectionreset');
+			}
+			return route.continue();
+		});
+		await open(page, '/#/images/0/48');
+		await expect(page.locator('.imageItem a.fancybox')).toHaveCount(48);
+		await expect(page.locator('.noResults')).toHaveCount(0);
+		expect(aborted).toBe(2);
+	});
+
+	test('a request that keeps failing shows the read error', async ({ page }) => {
+		await page.route('**/inc/images.php', route => route.abort('connectionreset'));
+		await page.goto('/#/images/0/48');
+		await expect(page.locator('.noResults')).toHaveText('Images read error');
+	});
+
 	test('images have their file name as alt text', async ({ page }) => {
 		await open(page, '/#/images/0/48');
 		await expect(page.locator('a[href="wide.png"] img')).toHaveAttribute('alt', 'wide.png');

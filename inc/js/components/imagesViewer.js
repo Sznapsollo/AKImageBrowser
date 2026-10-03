@@ -223,7 +223,7 @@ const ImagesViewer = {
 			})
 		}
 
-		function getImages(callback, isRefresh) {
+		function getImages(callback, isRefresh, isRetry) {
 			if(route.name !== 'images') {
 				return
 			}
@@ -299,6 +299,17 @@ const ImagesViewer = {
 					})
 				})
 				.catch(function (error) {
+					if(requestKey !== loadedRouteKey) {
+						return
+					}
+					if(!isRetry && error instanceof TypeError) {
+						setTimeout(function() {
+							if(requestKey === loadedRouteKey) {
+								getImages(callback, isRefresh, true)
+							}
+						}, 700)
+						return
+					}
 					dataLoading.value = false;
 					viewerMessage.value = 'msg.readError';
 					console.log('Images read error', error);

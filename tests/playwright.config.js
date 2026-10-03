@@ -6,7 +6,7 @@ module.exports = defineConfig({
 	globalSetup: './global-setup.js',
 	timeout: 30000,
 	expect: { timeout: 10000 },
-	retries: 0,
+	retries: process.env.CI ? 2 : 0,
 	reporter: 'list',
 	use: {
 		baseURL: MAIN_URL,

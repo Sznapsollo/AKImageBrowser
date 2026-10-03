@@ -1,11 +1,10 @@
 const { test, expect } = require('@playwright/test');
+const { trackPageErrors } = require('../helpers');
 
 let pageErrors;
 
 test.beforeEach(async ({ page }) => {
-	pageErrors = [];
-	page.on('pageerror', e => pageErrors.push(e.message));
-	page.on('console', m => m.type() === 'error' && pageErrors.push(m.text()));
+	pageErrors = trackPageErrors(page);
 });
 
 test.afterEach(() => {
@@ -141,10 +140,11 @@ test('about page shows version', async ({ page }) => {
 
 test('tile modes: square crop and fit are uniform, original is not', async ({ page }) => {
 	const heights = () => page.locator('.thumbBox').evaluateAll(els => [...new Set(els.map(e => Math.round(e.getBoundingClientRect().height)))]);
+	await open(page);
+	await page.locator('a.nav-link', { hasText: 'Options' }).click();
 	for (const [mode, uniform] of [['crop', true], ['fit', true], ['original', false]]) {
-		await page.goto('/');
-		await page.evaluate(m => localStorage.tileMode = m, mode);
-		await open(page);
+		await page.locator('#tileMode').selectOption(mode);
+		await expect(page.locator('.pageContent')).toHaveClass(new RegExp('tiles-' + mode));
 		expect((await heights()).length === 1, mode).toBe(uniform);
 	}
 });

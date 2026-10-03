@@ -1,6 +1,6 @@
 var settings = function() {
 	return {
-		version: '1.63',
+		version: '1.64',
 		fileTypesDefault: '',
 		fileTypesStorageName: 'fileTypes',
 		fileTimesStorageName: 'showFileTimes',

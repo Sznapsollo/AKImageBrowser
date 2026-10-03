@@ -82,6 +82,7 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 
 ## Changelog
 
+- 1.64 - gallery request is retried once on a dropped connection before showing an error; more robust browser tests on CI.
 - 1.63 - tests in Chromium, Firefox and WebKit; fixes from a code review: auto refresh paused while on About, Back no longer trapped on the start page, folders with non-UTF-8 names open, all EXIF orientations for thumbnails and correct portrait sizes, no thumbnail requests for small images, cache folders blocked from direct web access, faster pickup of files overwritten in place (30 s), Polish "Top" button, cleanups.
 - 1.62 - thumbnails on by default (`'auto'`) with safe generation limits and cache cleanup, folder listing cache (about 5x faster for big folders), new pager, instant options, Back keeps scroll position, keyboard tile navigation, smarter auto refresh, Polish translation, GitHub test workflow.
 - 1.61 - optional thumbnails, video length on tiles, image info and copy link in viewer, `/` search shortcut, centered layout with footer, browser test suite.

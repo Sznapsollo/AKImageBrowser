@@ -57,4 +57,20 @@ async function api(baseUrl, body) {
 const MAIN_PORT = Number(process.env.AKIB_PORT || 8790);
 const MAIN_URL = `http://127.0.0.1:${MAIN_PORT}/`;
 
-module.exports = { buildSite, startServer, api, FIXTURES, MAIN_PORT, MAIN_URL };
+function trackPageErrors(page) {
+	const errors = [];
+	page.on('pageerror', e => errors.push(e.message));
+	page.on('console', m => {
+		if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) {
+			errors.push(m.text());
+		}
+	});
+	page.on('response', r => {
+		if (r.status() >= 400) {
+			errors.push(`${r.status()} ${r.url()}`);
+		}
+	});
+	return errors;
+}
+
+module.exports = { trackPageErrors, buildSite, startServer, api, FIXTURES, MAIN_PORT, MAIN_URL };
