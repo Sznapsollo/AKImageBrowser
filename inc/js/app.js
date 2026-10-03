@@ -18,7 +18,8 @@ var app = Vue.createApp({
 
 		return {
 			redirectToMain,
-			showSettings
+			showSettings,
+			version: settings.version
 		}
 	}
 })

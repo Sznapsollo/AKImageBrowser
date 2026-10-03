@@ -2,52 +2,69 @@
 
 ## About
 
-AKImageBrowser is quick deployable web image browser/gallery that will display images from given folder. It bases on php (backend side) and Vue 3 (frontend side).
+AKImageBrowser is a quickly deployable web image browser/gallery that displays images from the folder it is copied into. It is based on PHP (backend) and Vue 3 (frontend).
+
+It is deliberately small (about 400 KB, ~90 KB transferred on first load) and has nothing to build or install.
 
 Working example: <a href="http://cultrides.com/test/Github/AKImageBrowser/" target="_blank">AKImageBrowser example</a>
 
-Youtube quick vid showing way to deploy and use: <a href="https://youtu.be/LktPTabEfws" target="_blank">AKImageBrowser video</a>
+YouTube quick video showing how to deploy and use it: <a href="https://youtu.be/LktPTabEfws" target="_blank">AKImageBrowser video</a>
 
-## Usage
+## Requirements
 
-The idea is to copy contents of AKImageBrowser to some webserver folder that contains images. Then open this folder address in webbrowser which will allow to browse these images in a bit more friendly manner.
+- Any web server with PHP 7.2 or newer (PHP 8.x recommended).
+- A current browser (Chrome/Edge/Firefox, Safari 15.4+).
 
-There is no need to compile or build anything. All is prepared to be copied.
+## How to use
 
-## How to use instruction
+Copy the <b>inc</b> folder and the <b>index.html</b> file into a web folder containing images and ... that's it ;-)
 
-copy <b>inc</b> folder, and <b>index.html</b> file to some webfolder containg images and ... Thats it ;-)
+Now browse to that folder's address and AKImageBrowser will display your images.
 
-Now browse to that folder address with your browser and you should see AKImageBrowset viewer displaying your images.
+You can also download `AKImageBrowser-<version>.zip` from the GitHub releases page - it contains only these two items. To build the same zip from a checkout:
 
-## Features (in settings of viewer)
+```bash
+git archive -o AKImageBrowser.zip HEAD index.html inc
+```
+
+Notes:
+- an existing `index.html` in the folder will be replaced,
+- if the folder already has its own `inc` folder, files will be mixed - use a different folder or rename one of them,
+- only files directly in the folder are shown (no subfolders).
+
+## Updating
+
+Delete the old `inc` folder and `index.html`, then copy the new ones. Copying over the old `inc` works too, but leaves unused files from older versions behind. If you changed `inc/settings.php`, keep a copy and re-apply your changes.
+
+The current version is shown in the footer of the page.
+
+## Features (in viewer options)
 
 AKImageBrowser has some features that make image browsing a bit more pleasant:
 - paging with options to choose how many images per page should be displayed
-- lazy loading -> images will load when user actually displays them
-- filtering of image types -> user can set what type of file extensions should be displayed [in options]
-- image scaling -> user can adjust size of images to be displayed in gallery. [in options]
-- optional showing image name and image change date in images list
-- option to hide image descriptions whenl image size lower than specified value
-- option to autorefresh gallery, refresh interval can be changed
+- lazy loading -> images load when the user actually scrolls to them
+- filtering of image types -> user can set which file extensions should be displayed
+- image scaling -> user can adjust the size of images in the gallery (also +/- buttons and keys)
+- optional showing of image name and image change date in the images list
+- option to hide image descriptions when image size is lower than a specified value
+- option to auto refresh the gallery, refresh interval can be changed
 
-## Some settings in settings.php
+## Settings in inc/settings.php
 
-These initial settings allow you to tweak some initial viewer behaviour
+- `allowedFileTypes` - extensions that can ever be listed (default: jpg, jpeg, png, gif, webp, avif, bmp, svg). Viewer options can narrow this list but never extend it.
+- `secretWord` - if enabled, the viewer asks for this word before showing images. It is not really a security measure (images are still reachable by direct link) but comes in handy sometimes.
+- `deleteOlderFiles` - if enabled, deletes image files (only `allowedFileTypes`) older than `deleteOlderThanDays` days. It only runs when someone views the gallery, there is no scheduled task.
 
-- secretWord - if enabled will ask for secret word defined in this setting. option to hide images behind some secret key - it is not really any security measure but comes in handy sometimes.
-- deleteOlderFiles - if enabled will delete older files than x days (determined by deleteOlderThanDays setting) - it only works when someone views images since there is not scheduled task or anything ... 
+## Changelog
+
+- 1.56 - security fixes (file type whitelist, safe captions, file names with special characters), about 10x smaller download (no jQuery/Bootstrap/axios), native lazy loading, version in footer.
 
 ## Note
 
-This little tool comes in handy sometimes. I made it just to have easily deployable image browser with friendly interface for variety of needs (home camera images, vacation pics etc). Hope you will find it useful too ;-)
+This little tool comes in handy sometimes. I made it just to have an easily deployable image browser with a friendly interface for a variety of needs (home camera images, vacation pics etc). Hope you will find it useful too ;-)
 
 Wanna touch base? office@webproject.waw.pl
 
 ## Example Screen
 
 ![Image of AKImageBrowser #1](http://cultrides.com/test/Github/AKImageBrowserDemo20181124.JPG)
-
-## todo
-...
-
