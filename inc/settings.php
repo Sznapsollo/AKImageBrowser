@@ -9,6 +9,10 @@ $settings->allowedFileTypes = 'jpg, jpeg, png, gif, webp, avif, bmp, svg, mp4, w
 // show subfolders as tiles and allow browsing into them (hidden folders starting with '.' are never shown)
 $settings->showSubfolders = true;
 
+// small cached copies of images for the gallery tiles, needs PHP GD and a writable inc folder (cache in inc/.thumbs, safe to delete)
+$settings->thumbnails = false;
+$settings->thumbnailSize = 400;
+
 // purely optional and to be changed only from backend
 // if set to true it will automatically delete files older than x days specified by parameter
 // keeping folder clean

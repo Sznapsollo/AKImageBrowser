@@ -1,14 +1,14 @@
 const ImagesViewer = { 
 	name: 'imagesViewer',
 	template: `
-		<button type="button" class="btn zoomButton zoomInButton" @click="zoomIn" id="zoomInButton">
+		<button type="button" class="btn zoomButton zoomInButton" @pointerdown.prevent="startZoomHold(zoomIn, $event)" @pointerup="stopZoomHold" @pointerleave="stopZoomHold" @pointercancel="stopZoomHold" @contextmenu.prevent @click="onZoomClick(zoomIn, $event)" id="zoomInButton" title="Zoom in (hold to keep zooming)">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-zoom-in" viewBox="0 0 16 16">
 				<path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"></path>
 				<path d="M10.344 11.742c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1 6.538 6.538 0 0 1-1.398 1.4z"></path>
 				<path fill-rule="evenodd" d="M6.5 3a.5.5 0 0 1 .5.5V6h2.5a.5.5 0 0 1 0 1H7v2.5a.5.5 0 0 1-1 0V7H3.5a.5.5 0 0 1 0-1H6V3.5a.5.5 0 0 1 .5-.5z"></path>
 			</svg>
 		</button>
-		<button type="button" class="btn zoomButton zoomOutButton" @click="zoomOut" id="zoomOutButton">
+		<button type="button" class="btn zoomButton zoomOutButton" @pointerdown.prevent="startZoomHold(zoomOut, $event)" @pointerup="stopZoomHold" @pointerleave="stopZoomHold" @pointercancel="stopZoomHold" @contextmenu.prevent @click="onZoomClick(zoomOut, $event)" id="zoomOutButton" title="Zoom out (hold to keep zooming)">
 			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-zoom-out" viewBox="0 0 16 16">
 				<path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"></path>
 				<path d="M10.344 11.742c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1 6.538 6.538 0 0 1-1.398 1.4z"></path>
@@ -24,7 +24,7 @@ const ImagesViewer = {
 				</template>
 			</div>
 			<div class="toolbar">
-				<input type="search" class="searchInput" placeholder="Search file name" v-model="searchText" @input="onSearchInput" aria-label="Search file name">
+				<input type="search" class="searchInput" placeholder="Search file name ( / )" v-model="searchText" @input="onSearchInput" @keydown.esc="clearSearch" aria-label="Search file name" title="Press / to search, Esc to clear">
 				<select v-model="sortOrder" @change="onSortChange" aria-label="Sort order">
 					<option value="dateDesc">Newest first</option>
 					<option value="dateAsc">Oldest first</option>
@@ -35,14 +35,16 @@ const ImagesViewer = {
 			<div v-if="allCount > 0">
 				<pager-component></pager-component>
 			</div>
-			
+
+			<div class="tilesArea">
+			<div class="tiles">
 			<div v-if="dataLoading" class="loadingWrapper marginTop10 marginBottom10"><div class="spinner"></div></div>
 
 			<div class="imageItem" v-for="folder in visibleFolders" :key="'folder:' + folder.path">
 				<a href="#" class="folderLink" @click.prevent="openFolder(folder.path)" v-bind:title="folder.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea folderArea">
 						<div class="thumbBox folderBox">
-							<img v-if="folder.preview" v-bind:src="url + folder.preview" loading="lazy" alt=""/>
+							<img v-if="folder.preview" v-bind:src="folder.previewThumb || url + folder.preview" loading="lazy" alt=""/>
 							<svg v-else class="folderIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z"/></svg>
 							<span v-if="folder.preview || folder.count" class="folderBadge">
 								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z"/></svg>
@@ -55,14 +57,15 @@ const ImagesViewer = {
 			</div>
 
 			<div class="imageItem" v-for="image in imagesList" :key="image.url">
-				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url + image.url" v-bind:data-type="image.type === 'video' ? 'html5video' : null" v-bind:data-format="image.format" v-bind:data-download-src="url + image.url" v-bind:title="image.name">
+				<a class="fancybox" v-bind:data-caption="getCaption(image)" v-bind:data-thumb="image.thumb || null" data-fancybox="images" v-bind:href="url + image.url" v-bind:data-type="image.type === 'video' ? 'html5video' : null" v-bind:data-format="image.format" v-bind:data-download-src="url + image.url" v-bind:title="image.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
 						<div v-if="image.type === 'video'" class="thumbBox videoThumb">
-							<video v-lazy-src="url + image.url + '#t=0.1'" preload="metadata" muted playsinline></video>
+							<video v-lazy-src="url + image.url + '#t=0.1'" preload="metadata" muted playsinline @loadedmetadata="image.duration = $event.target.duration"></video>
 							<span class="playIcon"></span>
+							<span v-if="image.duration" class="durationBadge">{{formatDuration(image.duration)}}</span>
 						</div>
 						<div v-else class="thumbBox">
-							<img v-bind:src="url + image.url" v-bind:width="image.width" v-bind:height="image.height" loading="lazy" alt=""/>
+							<img v-bind:src="image.thumb || url + image.url" v-bind:width="image.width" v-bind:height="image.height" loading="lazy" alt=""/>
 						</div>
 						<div v-if="showFileTimes && showDescriptions" class="imageText">{{convertUniXDate(image.changeDate)}}</div>
 						<div v-if="showFileNames && showDescriptions" class="imageText">{{image.name}}</div>
@@ -73,6 +76,8 @@ const ImagesViewer = {
 			<div v-if="noResults && route.query.search" class="noResults">No images match "{{route.query.search}}"</div>
 			<div v-else-if="noResults" class="noResults">There are no results for given search criteria. Perhaps folder is empty or it does not contain any image types defined in options.</div>
 			<div v-if="viewerMessage" class="noResults">{{viewerMessage}}</div>
+			</div>
+			</div>
 
 			<div v-if="allCount > 0">
 				<pager-component></pager-component>
@@ -321,7 +326,36 @@ const ImagesViewer = {
 		// 	router.go()
 		// }
 
+		let zoomHoldTimer = null
+
+		const startZoomHold = function(zoom, event) {
+			if(event.button !== 0) {
+				return
+			}
+			stopZoomHold()
+			zoom()
+			zoomHoldTimer = setTimeout(function repeat() {
+				zoom()
+				zoomHoldTimer = setTimeout(repeat, 50)
+			}, 400)
+		}
+
+		const stopZoomHold = function() {
+			clearTimeout(zoomHoldTimer)
+			zoomHoldTimer = null
+		}
+
+		const onZoomClick = function(zoom, event) {
+			if(event.detail === 0) {
+				zoom()
+			}
+		}
+
 		const zoomIn = function() {
+			let inner = document.querySelector('#middleSection .inner')
+			if(inner && imageWidth + 10 > inner.clientWidth - 30) {
+				return
+			}
 			imageWidth += 10;
 			imageAreaStyle.value = {width: imageWidth + 'px'};
 			setLocalStorage(settings.imagesWidthStorageName, imageWidth);
@@ -336,6 +370,51 @@ const ImagesViewer = {
 			setLocalStorage(settings.imagesWidthStorageName, imageWidth);
 		}
 
+		const focusSearch = function() {
+			let input = document.querySelector('.searchInput')
+			if(input && input.offsetParent) {
+				input.focus()
+				input.select()
+			}
+		}
+
+		const clearSearch = function(e) {
+			if(!searchText.value) {
+				e.target.blur()
+				return
+			}
+			searchText.value = ''
+			onSearchInput()
+		}
+
+		const formatFileSize = function(bytes) {
+			if(!(bytes > 0)) {
+				return ''
+			}
+			let units = ['B', 'KB', 'MB', 'GB']
+			let i = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)))
+			return (bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + units[i]
+		}
+
+		const formatDuration = function(seconds) {
+			seconds = Math.round(seconds)
+			let h = Math.floor(seconds / 3600)
+			let m = Math.floor(seconds % 3600 / 60)
+			let s = String(seconds % 60).padStart(2, '0')
+			return h ? h + ':' + String(m).padStart(2, '0') + ':' + s : m + ':' + s
+		}
+
+		const getCaption = function(image) {
+			let info = []
+			if(image.width && image.height) {
+				info.push(image.width + '×' + image.height)
+			}
+			if(image.fileSize) {
+				info.push(formatFileSize(image.fileSize))
+			}
+			return image.name + ' ' + convertUniXDate(image.changeDate) + (info.length ? ' · ' + info.join(' · ') : '')
+		}
+
 		const handleKeyDownAction = function (args) {
 			if(!args) {args = {};};
 			let key = args.key
@@ -347,6 +426,9 @@ const ImagesViewer = {
 				case '_':
 				case '-':
 					zoomOut()
+					break
+				case '/':
+					focusSearch()
 					break
 			}
 		}
@@ -370,6 +452,7 @@ const ImagesViewer = {
 		})
 
 		Vue.onUnmounted(function() {
+			stopZoomHold()
 			clearInterval(timerAutoRefresh)
 		})
 
@@ -387,6 +470,9 @@ const ImagesViewer = {
 		return {
 			allCount,
 			breadcrumbs,
+			clearSearch,
+			formatDuration,
+			getCaption,
 			convertUniXDate,
 			folderNotFound,
 			openFolder,
@@ -407,6 +493,9 @@ const ImagesViewer = {
 			showFileTimes,
 			timeRemainingLabel,
 			url,
+			onZoomClick,
+			startZoomHold,
+			stopZoomHold,
 			zoomIn,
 			zoomOut
 		}

@@ -1,4 +1,5 @@
-# AKImageBrowser
+# AKIB
+###### AKImageBrowser
 
 ## About
 
@@ -47,7 +48,10 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 - filtering of file types -> user can set which file extensions should be displayed (empty = all allowed types)
 - image scaling -> user can adjust the size of images in the gallery (also +/- buttons and keys)
 - uniform tiles -> thumbnails as cropped squares (default), whole image fitted in a square, or original shape [in options]
-- viewer toolbar with slideshow, fullscreen and download
+- viewer toolbar with slideshow, fullscreen, download and copy link; caption shows image size and file size
+- video tiles show the video length
+- keyboard: `/` jumps to search, Esc clears it, +/- zoom tiles
+- optional server-side thumbnails for fast loading of big photos [settings file]
 - light / dark / auto theme (auto follows the system setting, also when it changes) switchable from the header
 - sorting by date or name (newest/oldest, A-Z/Z-A)
 - subfolder browsing with breadcrumbs (folder is kept in the page address); folder tiles show the newest image and file count
@@ -60,16 +64,32 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 
 - `allowedFileTypes` - extensions that can ever be listed (default: jpg, jpeg, png, gif, webp, avif, bmp, svg, mp4, webm, mov, m4v). Viewer options can narrow this list but never extend it.
 - `showSubfolders` - show subfolders and allow browsing into them (default: true). Browsing never goes outside the folder AKImageBrowser is in.
+- `thumbnails` - if true, gallery tiles use small cached copies of images (default: false). Needs the PHP GD extension and write access to the `inc` folder; thumbnails are stored in `inc/.thumbs` and can be deleted at any time. Without GD or write access the original images are shown. Big photos need a lot of memory to resize once (about 5 bytes per pixel), the first view of a folder can be slow.
+- `thumbnailSize` - shorter side of a thumbnail in pixels (default: 400).
 - `secretWord` - if enabled, the viewer asks for this word before showing images. It is not really a security measure (images are still reachable by direct link) but comes in handy sometimes.
 - `deleteOlderFiles` - if enabled, deletes media files (only `allowedFileTypes`, so videos too) older than `deleteOlderThanDays` days, in the main folder only (not subfolders). It only runs when someone views the gallery, there is no scheduled task.
 
 ## Changelog
 
+- 1.61 - optional thumbnails, video length on tiles, image info and copy link in viewer, `/` search shortcut, centered layout with footer, browser test suite.
 - 1.60 - uniform rounded square tiles (with option), folder preview tiles, light/dark/auto theme switch in header, slideshow/fullscreen/download in viewer, AKIB header, section.css merged into cascade.css.
 - 1.59 - video support (mp4, webm, mov, m4v); viewer file types empty by default = all allowed types. If you saved a file type list in Options before, clear it there to see videos.
 - 1.58 - subfolder browsing with breadcrumbs, Vue 3.2 / vue-router 4.2.
 - 1.57 - sorting (date/name) and file name search.
 - 1.56 - security fixes (file type whitelist, safe captions, file names with special characters), about 10x smaller download (no jQuery/Bootstrap/axios), native lazy loading, version in footer.
+
+## Development
+
+Nothing needs to be built. The `tests` folder (not part of the release zip) has browser and API tests using Playwright. They need PHP with GD, Node.js and optionally ffmpeg (for video tests):
+
+```bash
+cd tests
+npm install
+npx playwright install chromium
+npx playwright test
+```
+
+`PW_CHANNEL=chrome npx playwright test` runs them in installed Google Chrome, which also plays H.264 videos.
 
 ## Note
 

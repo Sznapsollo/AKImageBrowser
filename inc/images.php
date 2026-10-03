@@ -3,20 +3,10 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
 require_once(__DIR__.'/settings.php');
+require_once(__DIR__.'/common.php');
 
 $input = json_decode(file_get_contents('php://input'));
 $pathPrefix = dirname(__DIR__).'/';
-
-function parseFileTypes($fileTypes) {
-	$types = array_map('strtolower', array_map('trim', explode(',', (string)$fileTypes)));
-	return array_values(array_filter($types, 'strlen'));
-}
-
-function getVideoFormat($file) {
-	$formats = array('mp4' => 'video/mp4', 'm4v' => 'video/mp4', 'mov' => 'video/mp4', 'webm' => 'video/webm', 'ogv' => 'video/ogg');
-	$ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-	return isset($formats[$ext]) ? $formats[$ext] : null;
-}
 
 function summarizeFolder($absolute, $fileTypes) {
 	$count = 0;
@@ -37,11 +27,7 @@ function summarizeFolder($absolute, $fileTypes) {
 			}
 		}
 	}
-	return array('count' => $count, 'preview' => $preview);
-}
-
-function isValidFile($path, $fileTypes) {
-	return is_file($path) && in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $fileTypes, true);
+	return array('count' => $count, 'preview' => $preview, 'previewTime' => $previewTime);
 }
 
 function matchesSearch($name, $search) {
@@ -52,44 +38,6 @@ function matchesSearch($name, $search) {
 		return true;
 	}
 	return function_exists('mb_stripos') && @mb_stripos($name, $search, 0, 'UTF-8') !== false;
-}
-
-function resolveFolder($basePath, $path, $showSubfolders) {
-	$path = trim(str_replace('\\', '/', (string)$path), '/');
-	if($path === '') {
-		return array('relative' => '', 'absolute' => $basePath);
-	}
-	if(!$showSubfolders || strpos($path, "\0") !== false) {
-		return null;
-	}
-	$segments = explode('/', $path);
-	foreach($segments as $segment) {
-		if(!isVisibleFolderName($segment, false)) {
-			return null;
-		}
-	}
-	if($segments[0] === 'inc') {
-		return null;
-	}
-	$absolute = realpath($basePath.$path);
-	if($absolute === false || !is_dir($absolute) || !isInside($absolute, $basePath)) {
-		return null;
-	}
-	return array('relative' => implode('/', $segments), 'absolute' => $absolute.'/');
-}
-
-function isVisibleFolderName($name, $isRoot) {
-	$name = (string)$name;
-	return $name !== '' && $name[0] !== '.' && !($isRoot && $name === 'inc');
-}
-
-function isInside($absolute, $basePath) {
-	$base = realpath($basePath);
-	return $absolute === $base || strpos($absolute.'/', rtrim($base, '/').'/') === 0;
-}
-
-function encodePath($relative) {
-	return $relative === '' ? '' : implode('/', array_map('rawurlencode', explode('/', $relative))).'/';
 }
 
 function respond($data) {
@@ -194,12 +142,15 @@ $returnFiles = array();
 foreach(array_slice($files, $startIndex, $itemsPerPage, true) as $file => $changeDate) {
 	$videoFormat = getVideoFormat((string)$file);
 	$size = $videoFormat ? false : @getimagesize($folderPath.$file);
+	$relativeFile = ($folder['relative'] === '' ? '' : $folder['relative'].'/').$file;
 	$returnFiles[] = array(
 		'name' => (string)$file,
 		'url' => encodePath($folder['relative']).rawurlencode((string)$file),
 		'changeDate' => $changeDate,
 		'type' => $videoFormat ? 'video' : 'image',
 		'format' => $videoFormat,
+		'thumb' => getThumbnailUrl($settings, $relativeFile, $changeDate),
+		'fileSize' => @filesize($folderPath.$file),
 		'width' => $size ? $size[0] : null,
 		'height' => $size ? $size[1] : null
 	);
@@ -216,6 +167,7 @@ foreach($folders as $name) {
 		$summary = summarizeFolder($folderPath.$name, $fileTypes);
 		$returnFolder['count'] = $summary['count'];
 		$returnFolder['preview'] = $summary['preview'] === null ? null : encodePath($relative).rawurlencode($summary['preview']);
+		$returnFolder['previewThumb'] = $summary['preview'] === null ? null : getThumbnailUrl($settings, $relative.'/'.$summary['preview'], $summary['previewTime']);
 	}
 	$returnFolders[] = $returnFolder;
 }

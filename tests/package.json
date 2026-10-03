@@ -1,0 +1,11 @@
+{
+  "name": "akimagebrowser-tests",
+  "private": true,
+  "description": "Browser and API tests for AKImageBrowser. Not part of the deployed files.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}
