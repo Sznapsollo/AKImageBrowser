@@ -131,20 +131,23 @@ app.component('pager-component' , {
 			}
 		}
 
-		Vue.onMounted(function() {
-			console.log('PagerComponent mounted')
+		const onCalculateImagesPaging = function(args) {
+			if(!args) {
+				args = {};
+			}
+			let allCount = args.allCount || 0
+			totalItems.value = parseInt(allCount, 0);
+			rebuildPager()
+		}
 
-			mittEventBus.on('calculateImagesPaging', (args) => {
-				if(!args) {
-					args = {};
-				}
-				let allCount = args.allCount || 0
-				totalItems.value = parseInt(allCount, 0);
-				rebuildPager()
-			});
-			mittEventBus.on('rebuildPager', (args) => {
-				rebuildPager()
-			});
+		Vue.onMounted(function() {
+			mittEventBus.on('calculateImagesPaging', onCalculateImagesPaging);
+			mittEventBus.on('rebuildPager', rebuildPager);
+		})
+
+		Vue.onUnmounted(function() {
+			mittEventBus.off('calculateImagesPaging', onCalculateImagesPaging);
+			mittEventBus.off('rebuildPager', rebuildPager);
 		})
 
 		return {

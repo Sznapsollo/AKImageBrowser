@@ -30,7 +30,7 @@ git archive -o AKImageBrowser.zip HEAD index.html inc
 Notes:
 - an existing `index.html` in the folder will be replaced,
 - if the folder already has its own `inc` folder, files will be mixed - use a different folder or rename one of them,
-- only files directly in the folder are shown (no subfolders).
+- subfolders are shown as tiles and can be browsed (except hidden ones starting with `.` and the `inc` folder itself); set `showSubfolders = false` to turn this off.
 
 ## Updating
 
@@ -46,6 +46,7 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 - filtering of image types -> user can set which file extensions should be displayed
 - image scaling -> user can adjust the size of images in the gallery (also +/- buttons and keys)
 - sorting by date or name (newest/oldest, A-Z/Z-A)
+- subfolder browsing with breadcrumbs (folder is kept in the page address)
 - search by file name (kept in the page address, so it survives reload and can be shared)
 - optional showing of image name and image change date in the images list
 - option to hide image descriptions when image size is lower than a specified value
@@ -54,11 +55,13 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 ## Settings in inc/settings.php
 
 - `allowedFileTypes` - extensions that can ever be listed (default: jpg, jpeg, png, gif, webp, avif, bmp, svg). Viewer options can narrow this list but never extend it.
+- `showSubfolders` - show subfolders and allow browsing into them (default: true). Browsing never goes outside the folder AKImageBrowser is in.
 - `secretWord` - if enabled, the viewer asks for this word before showing images. It is not really a security measure (images are still reachable by direct link) but comes in handy sometimes.
-- `deleteOlderFiles` - if enabled, deletes image files (only `allowedFileTypes`) older than `deleteOlderThanDays` days. It only runs when someone views the gallery, there is no scheduled task.
+- `deleteOlderFiles` - if enabled, deletes image files (only `allowedFileTypes`) older than `deleteOlderThanDays` days, in the main folder only (not subfolders). It only runs when someone views the gallery, there is no scheduled task.
 
 ## Changelog
 
+- 1.58 - subfolder browsing with breadcrumbs, Vue 3.2 / vue-router 4.2.
 - 1.57 - sorting (date/name) and file name search.
 - 1.56 - security fixes (file type whitelist, safe captions, file names with special characters), about 10x smaller download (no jQuery/Bootstrap/axios), native lazy loading, version in footer.
 

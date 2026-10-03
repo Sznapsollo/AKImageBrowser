@@ -357,3 +357,21 @@ A:hover {
 	border: 1px solid #ced4da;
 	border-radius: 4px;
 }
+
+.breadcrumbs {
+	margin: 0 40px 10px 0;
+	font-size: 1rem;
+	word-break: break-word;
+}
+
+.folderArea svg {
+	display: block;
+	width: 70%;
+	margin: 0 auto;
+	height: auto;
+	color: #e0b84f;
+}
+
+.folderLink:hover .folderArea svg {
+	color: #d4a52f;
+}

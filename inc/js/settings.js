@@ -1,6 +1,6 @@
 var settings = function() {
 	return {
-		version: '1.57',
+		version: '1.58',
 		fileTypesDefault: 'jpg, gif, png,',
 		fileTypesStorageName: 'fileTypes',
 		fileTimesStorageName: 'showFileTimes',

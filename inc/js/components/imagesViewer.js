@@ -17,6 +17,12 @@ const ImagesViewer = {
 		</button>
 		<div class="pageContent">
 			<div v-if="timeRemainingLabel != null" class="refreshLabel">Refresh in: {{timeRemainingLabel}}</div>
+			<div v-if="route.query.path || folderNotFound" class="breadcrumbs">
+				<a href="#" @click.prevent="openFolder('')">Home</a>
+				<template v-for="crumb in breadcrumbs">
+					/ <a href="#" @click.prevent="openFolder(crumb.path)">{{crumb.name}}</a>
+				</template>
+			</div>
 			<div class="toolbar">
 				<input type="search" class="searchInput" placeholder="Search file name" v-model="searchText" @input="onSearchInput" aria-label="Search file name">
 				<select v-model="sortOrder" @change="onSortChange" aria-label="Sort order">
@@ -26,11 +32,20 @@ const ImagesViewer = {
 					<option value="nameDesc">Name Z-A</option>
 				</select>
 			</div>
-			<div v-if="!noResults">
+			<div v-if="allCount > 0">
 				<pager-component></pager-component>
 			</div>
 			
 			<div v-if="dataLoading" class="loadingWrapper marginTop10 marginBottom10"><div class="spinner"></div></div>
+
+			<div class="imageItem" v-for="folder in visibleFolders">
+				<a href="#" class="folderLink" @click.prevent="openFolder(folder.path)" v-bind:title="folder.name">
+					<div v-bind:style="imageAreaStyle" class="imageArea folderArea">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z"/></svg>
+						<div class="imageText">{{folder.name}}</div>
+					</div>
+				</a>
+			</div>
 
 			<div class="imageItem" v-for="image in imagesList">
 				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url + image.url">
@@ -48,7 +63,7 @@ const ImagesViewer = {
 			<div v-else-if="noResults" class="noResults">There are no results for given search criteria. Perhaps folder is empty or it does not contain any image types defined in options.</div>
 			<div v-if="viewerMessage" class="noResults">{{viewerMessage}}</div>
 
-			<div v-if="!noResults">
+			<div v-if="allCount > 0">
 				<pager-component></pager-component>
 			</div>
 			
@@ -85,6 +100,22 @@ const ImagesViewer = {
 		const sortOrder = Vue.ref(getLocalStorage(settings.sortStorageName, settings.sortDefault))
 		let searchTimer = null
 		let loadedRouteKey = null
+		const foldersList = Vue.ref([])
+		const folderNotFound = Vue.ref(false)
+
+		const visibleFolders = Vue.computed(function() {
+			return parseInt(route.params.startIndex) > 0 ? [] : foldersList.value
+		})
+
+		const breadcrumbs = Vue.computed(function() {
+			let crumbs = []
+			let path = ''
+			String(route.query.path || '').split('/').filter(Boolean).forEach(function(name) {
+				path = path ? path + '/' + name : name
+				crumbs.push({name: name, path: path})
+			})
+			return crumbs
+		})
 		let mittEventBus = Vue.inject('mittEventBus');
 		let autoRefreshInterval = null
 		let autoRefresh = null
@@ -113,6 +144,7 @@ const ImagesViewer = {
 			imageAreaStyle.value = {width: imageWidth + 'px'}
 			loadedRouteKey = getRouteKey()
 			imagesList.value = []
+			foldersList.value = []
 			dataLoading.value = true;
 			
 			getImages(getImgsCalback);
@@ -161,7 +193,7 @@ const ImagesViewer = {
 			if(route.name !== 'images') {
 				return null
 			}
-			return [route.params.startIndex, route.params.itemsPerPage, route.query.search || ''].join('|')
+			return [route.params.startIndex, route.params.itemsPerPage, route.query.search || '', route.query.path || ''].join('|')
 		}
 
 		const onSearchInput = function() {
@@ -172,9 +204,17 @@ const ImagesViewer = {
 				router.replace({
 					name: 'images',
 					params: {startIndex: 0, itemsPerPage: route.params.itemsPerPage},
-					query: search ? {search: search} : {}
+					query: Object.assign({}, route.query.path ? {path: route.query.path} : {}, search ? {search: search} : {})
 				})
 			}, 300)
+		}
+
+		const openFolder = function(path) {
+			router.push({
+				name: 'images',
+				params: {startIndex: 0, itemsPerPage: route.params.itemsPerPage},
+				query: path ? {path: path} : {}
+			})
 		}
 
 		const onSortChange = function() {
@@ -201,6 +241,7 @@ const ImagesViewer = {
 				fileTypes: fileTypes,
 				sort: sortOrder.value,
 				search: route.query.search || '',
+				path: route.query.path || '',
 				secretWord: sessionStorage.getItem("secretWord")
 			}
 
@@ -230,12 +271,23 @@ const ImagesViewer = {
 						return
 					}
 
-					viewerMessage.value = null
 					dataLoading.value = false;
+					folderNotFound.value = responseData?.status === -3;
+					if(folderNotFound.value) {
+						viewerMessage.value = "Folder not found";
+						imagesList.value = [];
+						foldersList.value = [];
+						allCount.value = 0;
+						noResults.value = false;
+						return
+					}
+
+					viewerMessage.value = null
 					imagesList.value = responseData.images;
+					foldersList.value = responseData.folders || [];
 					allCount.value = responseData.allCount;
 
-					noResults.value = !allCount.value;
+					noResults.value = !allCount.value && !foldersList.value.length;
 
 					setTimeout(function()
 					{
@@ -322,7 +374,11 @@ const ImagesViewer = {
 
 		return {
 			allCount,
+			breadcrumbs,
 			convertUniXDate,
+			folderNotFound,
+			openFolder,
+			visibleFolders,
 			dataLoading,
 			imageAreaStyle,
 			imagesList,
