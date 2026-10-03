@@ -70,10 +70,13 @@ arsort($files);
 
 $returnFiles = array();
 foreach(array_slice($files, $startIndex, $itemsPerPage, true) as $file => $changeDate) {
+	$size = @getimagesize($pathPrefix.$file);
 	$returnFiles[] = array(
 		'name' => (string)$file,
 		'url' => rawurlencode((string)$file),
-		'changeDate' => $changeDate
+		'changeDate' => $changeDate,
+		'width' => $size ? $size[0] : null,
+		'height' => $size ? $size[1] : null
 	);
 }
 

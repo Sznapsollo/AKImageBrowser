@@ -1,78 +1,58 @@
 app.component('settings-component' , { 
 	name: 'settingsComponent',
 	template: `
-		<!-- Modal -->
-		<div class="modal fade" id="settingsModal" role="dialog">
-			<div class="modal-dialog">
-
-			<!-- Modal content-->
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Options</h5>
-					<button type="button" class="close" data-dismiss="modal" @click="closeOptions()">
-						<span aria-hidden="true">&times;</span>
-					</button>
+		<dialog id="settingsModal" class="settingsDialog" @click="onDialogClick">
+			<div class="dialogHeader">
+				<h5>Options</h5>
+				<button type="button" class="closeButton" aria-label="Close" @click="closeOptions()">&times;</button>
+			</div>
+			<div class="dialogBody">
+				<div class="formGroup">
+					<label for="imageWidth">Image size: {{imageWidth}}px</label>
+					&nbsp;&nbsp;
+					<a href="#" @click.prevent="resetImageWidth()">reset</a>
+					<input id="imageWidth" type="range" min="50" v-bind:max="maxWidth" v-model="imageWidth">
 				</div>
-				<div class="modal-body">
-					<div class="container">
-						<div class="form-group">
-							<label for="imageWidth">Image size: {{imageWidth}}px</label>
-							&nbsp;&nbsp;
-							<a href="#" @click="resetImageWidth()">reset</a>
-							<input id="imageWidth" type="range" class="form-control" min="50" v-bind:max="maxWidth" v-model="imageWidth" v-on:change="rememberImageWidth()">
-						</div>
 
-						<div class="form-check">
-							<input class="form-check-input" type="checkbox" v-model="showFileTimes" id="showFileTimes">
-							<label class="form-check-label" for="showFileTimes">
-								Show file change times
-							</label>
-						</div>
+				<label class="formCheck">
+					<input type="checkbox" v-model="showFileTimes">
+					Show file change times
+				</label>
 
-						<div class="form-check">
-							<input class="form-check-input" type="checkbox" v-model="showFileNames" id="showFileNames">
-							<label class="form-check-label" for="showFileNames">
-								Show file names
-							</label>
-						</div>
+				<label class="formCheck">
+					<input type="checkbox" v-model="showFileNames">
+					Show file names
+				</label>
 
-						<br>
-						<div class="form-group">
-							<label for="hideDescriptionsBelow">Hide text below image width: {{hideDescriptionsBelow}}px</label>
-							&nbsp;&nbsp;
-							<a href="#" @click="resetHideDescriptionsBelow()">reset</a>
-							<input id="hideDescriptionsBelow" type="range" class="form-control" step="10" min="0" max="1000" v-model="hideDescriptionsBelow">
-						</div>
-
-						<div class="form-check">
-							<input class="form-check-input" type="checkbox" v-model="autoRefresh" id="autoRefresh">
-							<label class="form-check-label" for="autoRefresh">
-								Auto refresh
-							</label>
-						</div>
-
-						<br>
-						<div class="form-group">
-							<label for="refreshEvery">Refresh every: {{translateRefreshInterval()}}</label>
-							<input id="refreshEvery" type="range" class="form-control" step="10" min="0" max="10000" v-model="autoRefreshInterval">
-						</div>
-
-						<div class="form-group">
-							<label for="resetfileTypes">File types (example: jpg, gif, png,) - will require clicking "Apply"</label>
-							&nbsp;&nbsp;
-							<a href="#" @click="resetfileTypes()">reset</a>
-							<input id="resetfileTypes" type="text" class="form-control" v-model="fileTypes" />
-						</div>
-					</div>
+				<div class="formGroup">
+					<label for="hideDescriptionsBelow">Hide text below image width: {{hideDescriptionsBelow}}px</label>
+					&nbsp;&nbsp;
+					<a href="#" @click.prevent="resetHideDescriptionsBelow()">reset</a>
+					<input id="hideDescriptionsBelow" type="range" step="10" min="0" max="1000" v-model="hideDescriptionsBelow">
 				</div>
-				<div class="modal-footer">
-					"Save" will cache these settings for future browsing &nbsp;&nbsp;
-					<button type="button" class="btn btn-primary" @click="saveOptions()" data-dismiss="modal">Save</button>
+
+				<label class="formCheck">
+					<input type="checkbox" v-model="autoRefresh">
+					Auto refresh
+				</label>
+
+				<div class="formGroup">
+					<label for="refreshEvery">Refresh every: {{translateRefreshInterval()}}</label>
+					<input id="refreshEvery" type="range" step="10" min="0" max="10000" v-model="autoRefreshInterval">
+				</div>
+
+				<div class="formGroup">
+					<label for="resetfileTypes">File types (example: jpg, gif, png,)</label>
+					&nbsp;&nbsp;
+					<a href="#" @click.prevent="resetfileTypes()">reset</a>
+					<input id="resetfileTypes" type="text" v-model="fileTypes" />
 				</div>
 			</div>
-			
+			<div class="dialogFooter">
+				"Save" will cache these settings for future browsing &nbsp;&nbsp;
+				<button type="button" class="btn btnPrimary" @click="saveOptions()">Save</button>
 			</div>
-		</div>
+		</dialog>
 	`,
 	setup() {
 		const route = VueRouter.useRoute()
@@ -91,18 +71,29 @@ app.component('settings-component' , {
 		const autoRefreshInterval = Vue.ref(parseInt(getLocalStorage(settings.autoRefreshIntervalStorageName, settings.autoRefreshIntervalDefault)));
 		const hideDescriptionsBelow = Vue.ref(parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault)));
 
-		const maxWidth = Vue.ref($("#middleSection .inner").width());
+		const maxWidth = Vue.ref(1000);
+
+		const getDialog = function() {
+			return document.getElementById('settingsModal');
+		}
+
+		const getContentWidth = function() {
+			let inner = document.querySelector('#middleSection .inner');
+			return inner ? inner.clientWidth : 1000;
+		}
 
 		const closeOptions = function() {
-			reloadRoute();
+			getDialog().close();
+		}
+
+		const onDialogClick = function(e) {
+			if(e.target === getDialog()) {
+				closeOptions();
+			}
 		}
 
 		const reloadRoute = function() {
 			router.go()
-		}
-
-		const rememberImageWidth = function() {
-			
 		}
 
 		const resetHideDescriptionsBelow = function() {
@@ -129,8 +120,8 @@ app.component('settings-component' , {
 			setLocalStorage(settings.hideDescriptionsStorageName, hideDescriptionsBelow.value);
 			setLocalStorage(settings.autoRefreshStorageName, autoRefresh.value);
 			setLocalStorage(settings.autoRefreshIntervalStorageName, autoRefreshInterval.value);
-			
-			closeOptions();
+
+			reloadRoute();
 		}
 
 		Vue.onMounted(function() {
@@ -149,8 +140,8 @@ app.component('settings-component' , {
 				autoRefreshInterval.value = parseInt(getLocalStorage(settings.autoRefreshIntervalStorageName, settings.autoRefreshIntervalDefault));
 				hideDescriptionsBelow.value = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
 
-				maxWidth.value = $("#middleSection .inner").width();
-				$('#settingsModal').modal('show');
+				maxWidth.value = getContentWidth();
+				getDialog().showModal();
 			})
 		})
 
@@ -159,10 +150,10 @@ app.component('settings-component' , {
 			autoRefreshInterval,
 			hideDescriptionsBelow,
 			closeOptions,
+			onDialogClick,
 			fileTypes,
 			imageWidth,
 			maxWidth,
-			rememberImageWidth,
 			resetHideDescriptionsBelow,
 			resetfileTypes,
 			resetImageWidth,

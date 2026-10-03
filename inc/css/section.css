@@ -4,43 +4,6 @@
 	margin: 0 auto 0 auto;
 }
 
-#footer
-{
-	width: 95%;
-	display: table;
-	color: #999999;
-	padding: 10px;
-	clear: both;
-	border-top: 2px solid #DDDDDD;
-}
-
-#footer .leftColumn
-{
-	width: 50%;
-	height: 100%;
-	display: table-cell;
-}
-
-#footer .rightColumn
-{
-	text-align: right;
-	width: 50%;
-	height: 100%;
-	display: table-cell;
-	vertical-align: middle;
-}
-
-#footer ul
-{
-	margin: 0px 0px 0 0px;
-}
-
-#footer ul li
-{
-	display: inline;
-	margin: 0 10px 0 0;
-}
-
 #middleSection
 {
 	width: 100%;
