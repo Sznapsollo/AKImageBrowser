@@ -375,3 +375,36 @@ A:hover {
 .folderLink:hover .folderArea svg {
 	color: #d4a52f;
 }
+
+.imageArea video {
+	display: block;
+	width: 100%;
+	height: auto;
+	background: #000;
+}
+
+.videoThumb {
+	position: relative;
+}
+
+.playIcon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 44px;
+	height: 44px;
+	margin: -22px 0 0 -22px;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.55);
+	pointer-events: none;
+}
+
+.playIcon::after {
+	content: "";
+	position: absolute;
+	top: 12px;
+	left: 17px;
+	border-style: solid;
+	border-width: 10px 0 10px 16px;
+	border-color: transparent transparent transparent #fff;
+}

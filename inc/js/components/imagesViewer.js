@@ -38,7 +38,7 @@ const ImagesViewer = {
 			
 			<div v-if="dataLoading" class="loadingWrapper marginTop10 marginBottom10"><div class="spinner"></div></div>
 
-			<div class="imageItem" v-for="folder in visibleFolders">
+			<div class="imageItem" v-for="folder in visibleFolders" :key="'folder:' + folder.path">
 				<a href="#" class="folderLink" @click.prevent="openFolder(folder.path)" v-bind:title="folder.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea folderArea">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z"/></svg>
@@ -47,10 +47,14 @@ const ImagesViewer = {
 				</a>
 			</div>
 
-			<div class="imageItem" v-for="image in imagesList">
-				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url + image.url">
+			<div class="imageItem" v-for="image in imagesList" :key="image.url">
+				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url + image.url" v-bind:data-type="image.type === 'video' ? 'html5video' : null" v-bind:data-format="image.format">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
-						<div>
+						<div v-if="image.type === 'video'" class="videoThumb">
+							<video v-lazy-src="url + image.url + '#t=0.1'" preload="metadata" muted playsinline></video>
+							<span class="playIcon"></span>
+						</div>
+						<div v-else>
 							<img v-bind:src="url + image.url" v-bind:width="image.width" v-bind:height="image.height" loading="lazy" alt=""/>
 						</div>
 						<div v-if="showFileTimes && showDescriptions" class="imageText">{{convertUniXDate(image.changeDate)}}</div>

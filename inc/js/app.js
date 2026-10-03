@@ -89,3 +89,28 @@ app.provide('setLocalStorage', setLocalStorage);
 app.provide('secondsToHms', secondsToHms);
 app.provide('convertUniXDate', convertUniXDate);
 app.provide('getDefaultImageWidth', getDefaultImageWidth)
+
+const lazyVideoObserver = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(function(entries) {
+	entries.forEach(function(entry) {
+		if(entry.isIntersecting) {
+			entry.target.src = entry.target.dataset.src
+			lazyVideoObserver.unobserve(entry.target)
+		}
+	})
+}, {rootMargin: '300px'})
+
+app.directive('lazy-src', {
+	mounted(el, binding) {
+		el.dataset.src = binding.value
+		if(lazyVideoObserver) {
+			lazyVideoObserver.observe(el)
+		} else {
+			el.src = binding.value
+		}
+	},
+	unmounted(el) {
+		if(lazyVideoObserver) {
+			lazyVideoObserver.unobserve(el)
+		}
+	}
+})

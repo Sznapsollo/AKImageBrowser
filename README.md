@@ -43,7 +43,8 @@ The current version is shown in the footer of the page.
 AKImageBrowser has some features that make image browsing a bit more pleasant:
 - paging with options to choose how many images per page should be displayed
 - lazy loading -> images load when the user actually scrolls to them
-- filtering of image types -> user can set which file extensions should be displayed
+- videos (mp4, webm, mov, m4v) -> shown with a first-frame thumbnail and played in the viewer
+- filtering of file types -> user can set which file extensions should be displayed (empty = all allowed types)
 - image scaling -> user can adjust the size of images in the gallery (also +/- buttons and keys)
 - sorting by date or name (newest/oldest, A-Z/Z-A)
 - subfolder browsing with breadcrumbs (folder is kept in the page address)
@@ -54,13 +55,14 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 
 ## Settings in inc/settings.php
 
-- `allowedFileTypes` - extensions that can ever be listed (default: jpg, jpeg, png, gif, webp, avif, bmp, svg). Viewer options can narrow this list but never extend it.
+- `allowedFileTypes` - extensions that can ever be listed (default: jpg, jpeg, png, gif, webp, avif, bmp, svg, mp4, webm, mov, m4v). Viewer options can narrow this list but never extend it.
 - `showSubfolders` - show subfolders and allow browsing into them (default: true). Browsing never goes outside the folder AKImageBrowser is in.
 - `secretWord` - if enabled, the viewer asks for this word before showing images. It is not really a security measure (images are still reachable by direct link) but comes in handy sometimes.
-- `deleteOlderFiles` - if enabled, deletes image files (only `allowedFileTypes`) older than `deleteOlderThanDays` days, in the main folder only (not subfolders). It only runs when someone views the gallery, there is no scheduled task.
+- `deleteOlderFiles` - if enabled, deletes media files (only `allowedFileTypes`, so videos too) older than `deleteOlderThanDays` days, in the main folder only (not subfolders). It only runs when someone views the gallery, there is no scheduled task.
 
 ## Changelog
 
+- 1.59 - video support (mp4, webm, mov, m4v); viewer file types empty by default = all allowed types. If you saved a file type list in Options before, clear it there to see videos.
 - 1.58 - subfolder browsing with breadcrumbs, Vue 3.2 / vue-router 4.2.
 - 1.57 - sorting (date/name) and file name search.
 - 1.56 - security fixes (file type whitelist, safe captions, file names with special characters), about 10x smaller download (no jQuery/Bootstrap/axios), native lazy loading, version in footer.

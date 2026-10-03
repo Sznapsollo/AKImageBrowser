@@ -12,6 +12,12 @@ function parseFileTypes($fileTypes) {
 	return array_values(array_filter($types, 'strlen'));
 }
 
+function getVideoFormat($file) {
+	$formats = array('mp4' => 'video/mp4', 'm4v' => 'video/mp4', 'mov' => 'video/mp4', 'webm' => 'video/webm', 'ogv' => 'video/ogg');
+	$ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+	return isset($formats[$ext]) ? $formats[$ext] : null;
+}
+
 function isValidFile($path, $fileTypes) {
 	return is_file($path) && in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $fileTypes, true);
 }
@@ -83,7 +89,10 @@ if(isset($settings->secretWord)) {
 $allowedFileTypes = parseFileTypes($settings->allowedFileTypes);
 $fileTypes = $allowedFileTypes;
 if(isset($input->fileTypes) && is_string($input->fileTypes)) {
-	$fileTypes = array_values(array_intersect(parseFileTypes($input->fileTypes), $allowedFileTypes));
+	$requestedFileTypes = parseFileTypes($input->fileTypes);
+	if(count($requestedFileTypes)) {
+		$fileTypes = array_values(array_intersect($requestedFileTypes, $allowedFileTypes));
+	}
 }
 
 $startIndex = $settings->startIndex;
@@ -161,11 +170,14 @@ switch($sort) {
 
 $returnFiles = array();
 foreach(array_slice($files, $startIndex, $itemsPerPage, true) as $file => $changeDate) {
-	$size = @getimagesize($folderPath.$file);
+	$videoFormat = getVideoFormat((string)$file);
+	$size = $videoFormat ? false : @getimagesize($folderPath.$file);
 	$returnFiles[] = array(
 		'name' => (string)$file,
 		'url' => encodePath($folder['relative']).rawurlencode((string)$file),
 		'changeDate' => $changeDate,
+		'type' => $videoFormat ? 'video' : 'image',
+		'format' => $videoFormat,
 		'width' => $size ? $size[0] : null,
 		'height' => $size ? $size[1] : null
 	);

@@ -42,10 +42,10 @@ app.component('settings-component' , {
 				</div>
 
 				<div class="formGroup">
-					<label for="resetfileTypes">File types (example: jpg, gif, png,)</label>
+					<label for="resetfileTypes">File types (example: jpg, png, mp4) - empty shows all allowed types</label>
 					&nbsp;&nbsp;
 					<a href="#" @click.prevent="resetfileTypes()">reset</a>
-					<input id="resetfileTypes" type="text" v-model="fileTypes" />
+					<input id="resetfileTypes" type="text" placeholder="all allowed types" v-model="fileTypes" />
 				</div>
 			</div>
 			<div class="dialogFooter">
