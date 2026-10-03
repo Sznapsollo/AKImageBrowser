@@ -115,4 +115,4 @@ Wanna touch base? office@webproject.waw.pl
 
 ## Example Screen
 
-![Image of AKImageBrowser #1](http://cultrides.com/test/Github/AKImageBrowserDemo20181124.JPG)
+![Image of AKImageBrowser #1](http://cultrides.com/test/Github/AKImageBrowserDemo202610031848.jpg)
