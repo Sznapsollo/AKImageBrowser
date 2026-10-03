@@ -386,12 +386,18 @@ A:hover {
 }
 
 .dialogFooter {
-	justify-content: flex-end;
+	justify-content: space-between;
+	gap: 12px;
 	border-top: 1px solid var(--border);
 }
 
 .dialogBody {
 	padding: 16px 28px;
+}
+
+.dialogNote {
+	font-size: 0.8rem;
+	color: var(--text-muted);
 }
 
 .closeButton {
@@ -461,36 +467,65 @@ A:hover {
 }
 
 .pagerArea {
-	clear: both;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 10px 18px;
 	margin: 0 0 15px 0;
+}
+
+.perPage {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-muted);
+}
+
+.pageButtons {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+}
+
+.pageButton {
+	min-width: 32px;
+	height: 32px;
+	padding: 0 8px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	font: inherit;
 	font-weight: 700;
-}
-
-.pagerArea .choosePageArea {
-	margin: 0 10px 0 10px;
-}
-
-.pagerArea .pagerButtons {
-	margin-top: 15px;
-}
-
-.pagerArea A,
-.pagerArea A:visited,
-.pagerArea A:active {
-	font-family: tahoma, sans-serif;
-	font-size: 10pt;
 	color: var(--pager-text);
-	text-decoration: none;
-	padding: 10px;
-	border: 1px solid var(--pager-border);
-	text-transform: uppercase;
 	background: var(--pager-bg);
+	cursor: pointer;
 }
 
-.pagerArea A:hover {
+.pageButton:hover:not(:disabled) {
 	color: var(--link-hover);
-	border: 1px solid var(--link-hover);
-	border-radius: 5px;
+	border-color: var(--link-hover);
+}
+
+.pageButton.active {
+	color: #fff;
+	background: var(--link);
+	border-color: var(--link);
+}
+
+.pageButton:disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+.pageGap {
+	padding: 0 2px;
+	color: var(--text-muted);
+}
+
+.pagerCount {
+	color: var(--text-muted);
 }
 
 .noResults {
@@ -517,6 +552,15 @@ A:hover {
 
 a:hover .imageArea {
 	background: var(--border);
+}
+
+.imageItem > a:focus {
+	outline: none;
+}
+
+.imageItem > a:focus-visible .imageArea {
+	outline: 3px solid var(--link);
+	outline-offset: 2px;
 }
 
 .imageText {

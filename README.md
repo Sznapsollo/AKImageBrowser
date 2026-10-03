@@ -35,6 +35,9 @@ Notes:
 
 ## Updating
 
+AKImageBrowser keeps two caches in the `inc` folder when it is writable: `inc/.thumbs` (thumbnails) and `inc/.cache` (folder listings). Both can be deleted at any time.
+
+
 Delete the old `inc` folder and `index.html`, then copy the new ones. Copying over the old `inc` works too, but leaves unused files from older versions behind. If you changed `inc/settings.php`, keep a copy and re-apply your changes.
 
 The current version is shown in the footer of the page.
@@ -51,7 +54,14 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 - viewer toolbar with slideshow, fullscreen, download and copy link; caption shows image size and file size
 - video tiles show the video length
 - keyboard: `/` jumps to search, Esc clears it, +/- zoom tiles
-- optional server-side thumbnails for fast loading of big photos [settings file]
+- server-side thumbnails for fast loading of big photos (on automatically when the server supports it)
+- modern pager with page numbers, page size choice and item count
+- options apply instantly while you change them
+- Back button returns to the same scroll position
+- keyboard: arrow keys / Home / End move between tiles, Enter opens
+- auto refresh only updates the page when the folder actually changed
+- English and Polish interface (follows the browser language, can be changed in options)
+- fast with big folders (tens of thousands of files) thanks to a folder listing cache
 - light / dark / auto theme (auto follows the system setting, also when it changes) switchable from the header
 - sorting by date or name (newest/oldest, A-Z/Z-A)
 - subfolder browsing with breadcrumbs (folder is kept in the page address); folder tiles show the newest image and file count
@@ -64,13 +74,15 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 
 - `allowedFileTypes` - extensions that can ever be listed (default: jpg, jpeg, png, gif, webp, avif, bmp, svg, mp4, webm, mov, m4v). Viewer options can narrow this list but never extend it.
 - `showSubfolders` - show subfolders and allow browsing into them (default: true). Browsing never goes outside the folder AKImageBrowser is in.
-- `thumbnails` - if true, gallery tiles use small cached copies of images (default: false). Needs the PHP GD extension and write access to the `inc` folder; thumbnails are stored in `inc/.thumbs` and can be deleted at any time. Without GD or write access the original images are shown. Big photos need a lot of memory to resize once (about 5 bytes per pixel), the first view of a folder can be slow.
+- `thumbnails` - `'auto'` (default), `true` or `false`. Gallery tiles use small cached copies of images (JPG, PNG, WebP, BMP; not GIF so animations keep working). `'auto'` turns them on when the PHP GD extension is available and the `inc` folder is writable, otherwise original images are shown. Thumbnails are made at most two at a time; while both are busy the original is shown and the thumbnail is made on a later visit. They are stored in `inc/.thumbs` (safe to delete), unused ones are removed after 30 days.
+- `thumbnailCacheMaxMB` - size limit of `inc/.thumbs` (default: 200), oldest thumbnails are removed above it.
 - `thumbnailSize` - shorter side of a thumbnail in pixels (default: 400).
 - `secretWord` - if enabled, the viewer asks for this word before showing images. It is not really a security measure (images are still reachable by direct link) but comes in handy sometimes.
 - `deleteOlderFiles` - if enabled, deletes media files (only `allowedFileTypes`, so videos too) older than `deleteOlderThanDays` days, in the main folder only (not subfolders). It only runs when someone views the gallery, there is no scheduled task.
 
 ## Changelog
 
+- 1.62 - thumbnails on by default (`'auto'`) with safe generation limits and cache cleanup, folder listing cache (about 5x faster for big folders), new pager, instant options, Back keeps scroll position, keyboard tile navigation, smarter auto refresh, Polish translation, GitHub test workflow.
 - 1.61 - optional thumbnails, video length on tiles, image info and copy link in viewer, `/` search shortcut, centered layout with footer, browser test suite.
 - 1.60 - uniform rounded square tiles (with option), folder preview tiles, light/dark/auto theme switch in header, slideshow/fullscreen/download in viewer, AKIB header, section.css merged into cascade.css.
 - 1.59 - video support (mp4, webm, mov, m4v); viewer file types empty by default = all allowed types. If you saved a file type list in Options before, clear it there to see videos.
@@ -89,7 +101,7 @@ npx playwright install chromium
 npx playwright test
 ```
 
-`PW_CHANNEL=chrome npx playwright test` runs them in installed Google Chrome, which also plays H.264 videos.
+`PW_CHANNEL=chrome npx playwright test` runs them in installed Google Chrome, which also plays H.264 videos. The same tests run on GitHub Actions on every push (`.github/workflows/tests.yml`).
 
 ## Note
 

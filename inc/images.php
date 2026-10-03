@@ -8,23 +8,23 @@ require_once(__DIR__.'/common.php');
 $input = json_decode(file_get_contents('php://input'));
 $pathPrefix = dirname(__DIR__).'/';
 
-function summarizeFolder($absolute, $fileTypes) {
+function hasFileType($name, $fileTypes) {
+	return in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), $fileTypes, true);
+}
+
+function summarizeFolder($listing, $fileTypes) {
 	$count = 0;
 	$preview = null;
-	$previewTime = -1;
-	foreach(scandir($absolute) as $file) {
-		$file = (string)$file;
-		$path = $absolute.'/'.$file;
-		if(!isValidFile($path, $fileTypes)) {
+	$previewTime = 0;
+	foreach($fileTypes as $type) {
+		if(!isset($listing['typeCounts'][$type])) {
 			continue;
 		}
-		$count++;
-		if(!getVideoFormat($file)) {
-			$time = filemtime($path);
-			if($time > $previewTime) {
-				$previewTime = $time;
-				$preview = $file;
-			}
+		$count += $listing['typeCounts'][$type];
+		$name = $listing['newestByType'][$type];
+		if(!getVideoFormat($name) && ($preview === null || $listing['mtimes'][$name] > $previewTime)) {
+			$preview = $name;
+			$previewTime = $listing['mtimes'][$name];
 		}
 	}
 	return array('count' => $count, 'preview' => $preview, 'previewTime' => $previewTime);
@@ -42,6 +42,7 @@ function matchesSearch($name, $search) {
 
 function respond($data) {
 	header('Content-Type: application/json; charset=utf-8');
+	header('Cache-Control: no-store');
 	echo json_encode($data, JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 	exit;
 }
@@ -103,49 +104,38 @@ if(isset($input->sort) && in_array($input->sort, array('dateDesc', 'dateAsc', 'n
 	$sort = $input->sort;
 }
 
+$listing = readFolderListing($folderPath, $allowedFileTypes, $showSubfolders, $folder['relative'] === '', $pathPrefix);
+
+$ordered = $sort === 'nameAsc' || $sort === 'nameDesc' ? $listing['byName'] : $listing['byDate'];
+if($sort === 'dateAsc' || $sort === 'nameDesc') {
+	$ordered = array_reverse($ordered);
+}
 $files = array();
-$folders = array();
-foreach(scandir($folderPath) as $file) {
-	$file = (string)$file;
-	$path = $folderPath.$file;
-	if(isValidFile($path, $fileTypes)) {
-		if(matchesSearch($file, $search)) {
-			$files[$file] = filemtime($path);
-		}
-	} else if($showSubfolders && is_dir($path) && isVisibleFolderName($file, $folder['relative'] === '') && matchesSearch($file, $search)) {
-		$absolute = realpath($path);
-		if($absolute !== false && isInside($absolute, $pathPrefix)) {
-			$folders[] = $file;
-		}
+foreach($ordered as $name) {
+	if(hasFileType($name, $fileTypes) && matchesSearch($name, $search)) {
+		$files[] = $name;
 	}
 }
-usort($folders, 'strnatcasecmp');
+
+$folders = array();
+foreach($listing['folders'] as $name) {
+	if(matchesSearch($name, $search)) {
+		$folders[] = $name;
+	}
+}
 if($sort === 'nameDesc') {
 	$folders = array_reverse($folders);
 }
 
-switch($sort) {
-	case 'dateAsc':
-		asort($files);
-		break;
-	case 'nameAsc':
-		uksort($files, 'strnatcasecmp');
-		break;
-	case 'nameDesc':
-		uksort($files, function($a, $b) { return strnatcasecmp((string)$b, (string)$a); });
-		break;
-	default:
-		arsort($files);
-}
-
 $returnFiles = array();
-foreach(array_slice($files, $startIndex, $itemsPerPage, true) as $file => $changeDate) {
-	$videoFormat = getVideoFormat((string)$file);
+foreach(array_slice($files, $startIndex, $itemsPerPage) as $file) {
+	$changeDate = $listing['mtimes'][$file];
+	$videoFormat = getVideoFormat($file);
 	$size = $videoFormat ? false : @getimagesize($folderPath.$file);
 	$relativeFile = ($folder['relative'] === '' ? '' : $folder['relative'].'/').$file;
 	$returnFiles[] = array(
-		'name' => (string)$file,
-		'url' => encodePath($folder['relative']).rawurlencode((string)$file),
+		'name' => $file,
+		'url' => encodePath($folder['relative']).rawurlencode($file),
 		'changeDate' => $changeDate,
 		'type' => $videoFormat ? 'video' : 'image',
 		'format' => $videoFormat,
@@ -164,7 +154,7 @@ foreach($folders as $name) {
 		'path' => $relative
 	);
 	if($startIndex === 0) {
-		$summary = summarizeFolder($folderPath.$name, $fileTypes);
+		$summary = summarizeFolder(readFolderListing($folderPath.$name, $allowedFileTypes, $showSubfolders, false, $pathPrefix), $fileTypes);
 		$returnFolder['count'] = $summary['count'];
 		$returnFolder['preview'] = $summary['preview'] === null ? null : encodePath($relative).rawurlencode($summary['preview']);
 		$returnFolder['previewThumb'] = $summary['preview'] === null ? null : getThumbnailUrl($settings, $relative.'/'.$summary['preview'], $summary['previewTime']);
@@ -172,9 +162,14 @@ foreach($folders as $name) {
 	$returnFolders[] = $returnFolder;
 }
 
-respond(array(
+$response = array(
 	'path' => $folder['relative'],
 	'folders' => $returnFolders,
 	'images' => $returnFiles,
 	'allCount' => count($files)
-));
+);
+$response['version'] = sha1(serialize($response));
+if(isset($input->knownVersion) && $input->knownVersion === $response['version']) {
+	respond(array('status' => 0, 'version' => $response['version']));
+}
+respond($response);

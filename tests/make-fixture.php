@@ -14,6 +14,8 @@ function makeImage($path, $width, $height, $label, $mtime) {
 	$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 	if($ext === 'png') {
 		imagepng($image, $path);
+	} else if($ext === 'gif') {
+		imagegif($image, $path);
 	} else {
 		imagejpeg($image, $path, 80);
 	}
@@ -55,6 +57,7 @@ makeImage("$dir/Żółw.jpg", 400, 300, 'zolw', $now - 120);
 makeImage("$dir/IMG10.JPG", 400, 300, 'IMG10', $now - 130);
 makeImage("$dir/wide.png", 900, 200, 'wide', $now - 140);
 makeImage("$dir/tall.jpg", 200, 700, 'tall', $now - 150);
+makeImage("$dir/anim.gif", 300, 200, 'gif', $now - 170);
 @makeImage("$dir/bad\xff.jpg", 300, 200, 'bad utf8', $now - 160);
 file_put_contents("$dir/notes.txt", 'not an image');
 touch("$dir/notes.txt", $now - 86400 * 30);

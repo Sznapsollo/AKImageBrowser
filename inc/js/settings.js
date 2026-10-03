@@ -1,6 +1,6 @@
 var settings = function() {
 	return {
-		version: '1.61',
+		version: '1.62',
 		fileTypesDefault: '',
 		fileTypesStorageName: 'fileTypes',
 		fileTimesStorageName: 'showFileTimes',
@@ -19,6 +19,8 @@ var settings = function() {
 		tileModeStorageName: 'tileMode',
 		tileModeDefault: 'crop',
 		themeStorageName: 'theme',
-		themeDefault: 'auto'
+		themeDefault: 'auto',
+		languageStorageName: 'language',
+		languageDefault: 'auto'
 	}
 }();

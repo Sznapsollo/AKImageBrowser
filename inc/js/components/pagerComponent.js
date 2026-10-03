@@ -1,166 +1,78 @@
-app.component('pager-component' , { 
+app.component('pager-component' , {
 	name: 'pagerComponent',
+	props: {
+		total: {type: Number, default: 0},
+		showPerPage: {type: Boolean, default: true}
+	},
 	template: `
-	<div class="pagerArea">
-		<div>
-			<span class="choosePageArea">Per page: 
-				<select v-model="selectedItemsPerPage" v-on:change="updateItemsPerPage()">
-					<option v-for="item in itemsPerPageArray">
-						{{ item }}
-					</option>
-				</select>
-			</span>		
-			<span class="choosePageArea">Page: 
-				<select v-model="selectedPage" v-on:change="updateSelectedPage()">
-					<option v-for="page in pages" v-bind:value="page">
-						{{ parseInt(page) + 1 }}
-					</option>
-				</select>
-			</span>
-			<span class="choosePageArea">All: 
-				{{totalItems}}
-			</span>
+	<nav class="pagerArea">
+		<label v-if="showPerPage" class="perPage">
+			{{ t('pager.perPage') }}
+			<select :value="itemsPerPage" @change="changeItemsPerPage($event.target.value)">
+				<option v-for="size in itemsPerPageOptions" :value="size">{{ size }}</option>
+			</select>
+		</label>
+		<div v-if="pageCount > 1" class="pageButtons">
+			<button type="button" class="pageButton" :disabled="page === 0" @click="goTo(page - 1)" :title="t('pager.previous')" :aria-label="t('pager.previous')">‹</button>
+			<template v-for="(item, index) in pageItems" :key="index">
+				<span v-if="item === null" class="pageGap">…</span>
+				<button v-else type="button" class="pageButton" :class="{active: item === page}" :aria-current="item === page ? 'page' : null" @click="goTo(item)" :aria-label="t('pager.page', {page: item + 1})">{{ item + 1 }}</button>
+			</template>
+			<button type="button" class="pageButton" :disabled="page >= pageCount - 1" @click="goTo(page + 1)" :title="t('pager.next')" :aria-label="t('pager.next')">›</button>
 		</div>
-		<div class="pagerButtons">
-			<a style="cursor: pointer;" v-if="canGoBack()" @click="goToPage('first')"><<</a>
-			<a style="cursor: pointer;" v-if="canGoBack()" @click="goToPage('previous')"><</a>
-			<a style="cursor: pointer;" v-if="canGoNext()" @click="goToPage('next')">></a>
-			<a style="cursor: pointer;" v-if="canGoNext()" @click="goToPage('last')">>></a>
-		</div>
-	</div>	
+		<span class="pagerCount">{{ t('pager.items', {count: total}, total) }}</span>
+	</nav>
 	`,
-	setup() {
+	setup(props) {
 		const route = VueRouter.useRoute()
 		const router = VueRouter.useRouter()
-
-		let mittEventBus = Vue.inject('mittEventBus');
-		let getLocalStorage = Vue.inject('getLocalStorage');
 		let setLocalStorage = Vue.inject('setLocalStorage');
 
-		const pages = Vue.ref([]);
-		const itemsPerPageArray = Vue.ref([12,24,48,96,192,384,768]);
-		const selectedPage = Vue.ref(0);
-		const selectedItemsPerPage =  Vue.ref(parseInt(getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)));
-		const totalItems = Vue.ref(0)
+		const itemsPerPageOptions = [12, 24, 48, 96, 192, 384, 768]
 
-		const goToPage = function(mode) {
-			let itemsPerPage = parseInt(route.params.itemsPerPage, 0);
-			switch (mode) {
-				case 'first':
-					router.push({ name: 'images', params: {startIndex: firstNode, itemsPerPage: itemsPerPage}, query: route.query })
-					break;
-				case 'previous':
-					router.push({ name: 'images', params: {startIndex: previousNode, itemsPerPage: itemsPerPage}, query: route.query })
-					break;
-				case 'next':
-					router.push({ name: 'images', params: {startIndex: nextNode, itemsPerPage: itemsPerPage}, query: route.query })
-					break;
-				case 'last':
-					router.push({ name: 'images', params: {startIndex: lastNode, itemsPerPage: itemsPerPage}, query: route.query })
-					break;
-			}
-		}
+		const itemsPerPage = Vue.computed(function() {
+			return Math.max(1, parseInt(route.params.itemsPerPage) || settings.itemsPerPageDefault)
+		})
 
-		const updateItemsPerPage = function() 
-		{
-			setLocalStorage("itemsPerPage", selectedItemsPerPage.value);
-			router.push({ name: 'images', params: {startIndex: 0, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)}, query: route.query })
-		}
-		
-		const updateSelectedPage = function() 
-		{
-			router.push({ name: 'images', params: {startIndex: selectedPage.value * route.params.itemsPerPage, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)}, query: route.query })
-		}
-	
-		const canGoBack = function()
-		{
-			return parseInt(route.params.startIndex, 0) > 0;
-		}
+		const page = Vue.computed(function() {
+			return Math.floor((parseInt(route.params.startIndex) || 0) / itemsPerPage.value)
+		})
 
-		const canGoNext = function()
-		{
-			return parseInt(route.params.startIndex, 0) + parseInt(route.params.itemsPerPage, 0) < parseInt(totalItems.value, 0);
-		}
+		const pageCount = Vue.computed(function() {
+			return Math.ceil(props.total / itemsPerPage.value)
+		})
 
-		let firstNode = 0
-		let previousNode = 0
-		let nextNode = 0
-		let lastNode = 0
-
-		const rebuildPager = function() {
-			let startIndex = parseInt(route.params.startIndex, 0);
-			let itemsPerPage = parseInt(route.params.itemsPerPage, 0);
-			
-			selectedItemsPerPage.value = itemsPerPage;
-
-			if(itemsPerPage <= 0) {
-				itemsPerPage = parseInt(getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault));
-			}
-			
-			selectedPage.value = startIndex / itemsPerPage;
-			var pagesNumber = totalItems.value / itemsPerPage;
-			pages.value = [];
-			for (var i = 0; i < pagesNumber; i++) { 
-				if(!pages.value.includes(i))
-					pages.value.push(i);
-			}
-			
-			if(startIndex > 0) {
-				if(startIndex - itemsPerPage > 0) {
-					previousNode = startIndex - itemsPerPage;
-				} else {
-					previousNode = 0;
-				} 
-			}	
-			
-			if(startIndex + itemsPerPage < totalItems.value) {
-				nextNode = startIndex + itemsPerPage;
-				
-				lastNode = totalItems.value - itemsPerPage;
-				var itemsRound = parseInt(getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault) + 2);
-				
-				for(var i=0; i<=itemsRound; i++)
-				{
-					var calculate = totalItems.value - itemsPerPage + i;
-					if(calculate % parseInt(getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)) == 0)
-					{
-						lastNode = calculate;
-						break;
-					}
+		const pageItems = Vue.computed(function() {
+			let around = window.innerWidth < 500 ? 1 : 2
+			let items = []
+			for(let i = 0; i < pageCount.value; i++) {
+				if(i === 0 || i === pageCount.value - 1 || Math.abs(i - page.value) <= around) {
+					items.push(i)
+				} else if(items[items.length - 1] !== null) {
+					items.push(null)
 				}
 			}
-		}
-
-		const onCalculateImagesPaging = function(args) {
-			if(!args) {
-				args = {};
-			}
-			let allCount = args.allCount || 0
-			totalItems.value = parseInt(allCount, 0);
-			rebuildPager()
-		}
-
-		Vue.onMounted(function() {
-			mittEventBus.on('calculateImagesPaging', onCalculateImagesPaging);
-			mittEventBus.on('rebuildPager', rebuildPager);
+			return items
 		})
 
-		Vue.onUnmounted(function() {
-			mittEventBus.off('calculateImagesPaging', onCalculateImagesPaging);
-			mittEventBus.off('rebuildPager', rebuildPager);
-		})
+		const goTo = function(target) {
+			target = Math.max(0, Math.min(pageCount.value - 1, target))
+			router.push({name: 'images', params: {startIndex: target * itemsPerPage.value, itemsPerPage: itemsPerPage.value}, query: route.query})
+		}
+
+		const changeItemsPerPage = function(value) {
+			setLocalStorage(settings.itemsPerPageStorageName, value)
+			router.push({name: 'images', params: {startIndex: 0, itemsPerPage: value}, query: route.query})
+		}
 
 		return {
-			canGoBack,
-			canGoNext,
-			goToPage,
-			itemsPerPageArray,
-			pages,
-			selectedItemsPerPage,
-			selectedPage,
-			totalItems,
-			updateItemsPerPage,
-			updateSelectedPage
+			changeItemsPerPage,
+			goTo,
+			itemsPerPage,
+			itemsPerPageOptions,
+			page,
+			pageCount,
+			pageItems
 		}
 	}
 })

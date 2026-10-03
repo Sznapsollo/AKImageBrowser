@@ -3,9 +3,29 @@ const fs = require('fs');
 const path = require('path');
 const { api, buildSite, startServer, MAIN_URL } = require('../helpers');
 
-test('thumbnails are off by default', async () => {
-	const data = await api(MAIN_URL, {});
-	expect(data.images.every(i => i.thumb === null)).toBe(true);
+test('auto mode turns thumbnails on when GD and a writable inc folder are available', async () => {
+	const data = await api(MAIN_URL, { search: 'img1.jpg' });
+	expect(data.images[0].thumb).toMatch(/^inc\/thumb\.php/);
+});
+
+test('gif files never get thumbnails (animation stays)', async () => {
+	const data = await api(MAIN_URL, { itemsPerPage: 1000 });
+	expect(data.images.filter(i => /\.gif$/i.test(i.name)).every(i => i.thumb === null)).toBe(true);
+});
+
+test.describe('with thumbnails disabled', () => {
+	let server;
+	test.beforeAll(async () => {
+		server = await startServer(buildSite('nothumbs', { mode: 'small', settings: { thumbnails: false } }), 8793);
+	});
+	test.afterAll(() => server && server.stop());
+
+	test('api returns no thumbs and thumb.php redirects to originals', async ({ request }) => {
+		const data = await api(server.url, {});
+		expect(data.images.every(i => i.thumb === null)).toBe(true);
+		const response = await request.get(server.url + 'inc/thumb.php?f=img1.jpg', { maxRedirects: 0 });
+		expect(response.status()).toBe(302);
+	});
 });
 
 test.describe('with thumbnails enabled', () => {

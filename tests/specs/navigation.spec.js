@@ -5,17 +5,17 @@ const open = async (page, hash = '') => {
 	await page.waitForSelector('.imageItem');
 };
 
-const allCount = page => page.locator('.choosePageArea').nth(2);
+const allCount = page => page.locator('.pagerCount').first();
 
 test.describe('search and sort', () => {
 	test('search filters on the server and lives in the url', async ({ page }) => {
 		await open(page);
 		await page.locator('.searchInput').fill('img1');
 		await expect(page).toHaveURL(/\?search=img1$/);
-		await expect(allCount(page)).toContainText('All: 12');
+		await expect(allCount(page)).toHaveText('12 items');
 		await page.reload();
 		await expect(page.locator('.searchInput')).toHaveValue('img1');
-		await expect(allCount(page)).toContainText('All: 12');
+		await expect(allCount(page)).toHaveText('12 items');
 	});
 
 	test('no match message keeps the toolbar, clearing restores all', async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe('search and sort', () => {
 
 	test('search survives paging and opening an image', async ({ page }) => {
 		await open(page, '#/images/0/12?search=img');
-		await page.locator('.pagerButtons a', { hasText: /^>$/ }).first().click();
+		await page.locator('.pageButton[aria-label="Next page"]').first().click();
 		await expect(page).toHaveURL(/\/images\/12\/12\?search=img$/);
 		await page.locator('.imageItem a.fancybox').first().click();
 		await expect(page).toHaveURL(/\/images\/12\/12\/.+\?search=img$/);
@@ -62,9 +62,9 @@ test.describe('folders', () => {
 		await open(page);
 		await page.locator('.folderArea', { hasText: '2024' }).click();
 		await expect(page.locator('.imageItem a.fancybox')).toHaveCount(18);
-		await page.locator('.pagerArea select').first().selectOption('12');
+		await page.locator('.perPage select').selectOption('12');
 		await expect(page.locator('.imageItem a.fancybox')).toHaveCount(12);
-		await page.locator('.pagerButtons a', { hasText: /^>$/ }).first().click();
+		await page.locator('.pageButton[aria-label="Next page"]').first().click();
 		await expect(page.locator('.imageItem a.fancybox')).toHaveCount(6);
 		await expect(page.locator('.folderArea')).toHaveCount(0);
 	});
@@ -72,7 +72,7 @@ test.describe('folders', () => {
 	test('folder tiles show preview and count', async ({ page }) => {
 		await open(page);
 		const tile = page.locator('.folderArea', { hasText: '2024' });
-		await expect(tile.locator('img')).toHaveAttribute('src', /2024\/p1\.jpg/);
+		await expect(tile.locator('img')).toHaveAttribute('src', /2024(\/|%2F)p1\.jpg/);
 		await expect(tile.locator('.folderBadge')).toContainText('18');
 	});
 

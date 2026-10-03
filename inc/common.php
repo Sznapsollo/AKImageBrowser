@@ -54,12 +54,110 @@ function encodePath($relative) {
 }
 
 function getThumbnailUrl($settings, $relativeFile, $mtime) {
-	if(empty($settings->thumbnails) || !isThumbnailType($relativeFile)) {
+	if(!thumbnailsEnabled($settings) || !isThumbnailType($relativeFile)) {
 		return null;
 	}
 	return 'inc/thumb.php?f='.rawurlencode($relativeFile).'&v='.$mtime;
 }
 
 function isThumbnailType($file) {
-	return in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), array('jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'), true);
+	return in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), array('jpg', 'jpeg', 'png', 'webp', 'bmp'), true);
+}
+
+function thumbnailsEnabled($settings) {
+	static $enabled = null;
+	if($enabled === null) {
+		$mode = isset($settings->thumbnails) ? $settings->thumbnails : false;
+		$enabled = $mode === 'auto' ? function_exists('imagecreatetruecolor') && ensureWritableDir(__DIR__.'/.thumbs') : (bool)$mode;
+	}
+	return $enabled;
+}
+
+function ensureWritableDir($dir) {
+	if(!is_dir($dir)) {
+		@mkdir($dir, 0755);
+	}
+	return is_dir($dir) && is_writable($dir);
+}
+
+function writeFileAtomic($file, $content) {
+	$temp = $file.'.'.getmypid().'.tmp';
+	if(@file_put_contents($temp, $content) === false) {
+		return false;
+	}
+	return @rename($temp, $file);
+}
+
+function readFolderListing($absolute, $allowedFileTypes, $showSubfolders, $isRoot, $basePath) {
+	$absolute = rtrim($absolute, '/');
+	$cacheDir = __DIR__.'/.cache';
+	$cacheFile = $cacheDir.'/list-'.sha1($absolute.'|'.implode(',', $allowedFileTypes).'|'.($showSubfolders ? 1 : 0)).'.ser';
+	clearstatcache();
+	$dirTime = @filemtime($absolute);
+
+	if(is_file($cacheFile)) {
+		$cached = @unserialize((string)@file_get_contents($cacheFile), array('allowed_classes' => false));
+		if(is_array($cached) && $cached['dirTime'] === $dirTime && time() - $cached['created'] < 300) {
+			return $cached;
+		}
+	}
+
+	$files = array();
+	$folders = array();
+	foreach(scandir($absolute) as $name) {
+		$name = (string)$name;
+		$path = $absolute.'/'.$name;
+		if(isValidFile($path, $allowedFileTypes)) {
+			$files[$name] = filemtime($path);
+		} else if($showSubfolders && is_dir($path) && isVisibleFolderName($name, $isRoot)) {
+			$real = realpath($path);
+			if($real !== false && isInside($real, $basePath)) {
+				$folders[] = $name;
+			}
+		}
+	}
+	arsort($files);
+	$byName = array_keys($files);
+	usort($byName, 'strnatcasecmp');
+	usort($folders, 'strnatcasecmp');
+
+	$typeCounts = array();
+	$newestByType = array();
+	foreach($files as $name => $mtime) {
+		$ext = strtolower(pathinfo((string)$name, PATHINFO_EXTENSION));
+		$typeCounts[$ext] = isset($typeCounts[$ext]) ? $typeCounts[$ext] + 1 : 1;
+		if(!isset($newestByType[$ext])) {
+			$newestByType[$ext] = (string)$name;
+		}
+	}
+
+	$listing = array(
+		'dirTime' => $dirTime,
+		'created' => time(),
+		'mtimes' => $files,
+		'byDate' => array_map('strval', array_keys($files)),
+		'byName' => array_map('strval', $byName),
+		'folders' => $folders,
+		'typeCounts' => $typeCounts,
+		'newestByType' => $newestByType
+	);
+	if($dirTime !== false && $dirTime < time() - 1 && ensureWritableDir($cacheDir)) {
+		writeFileAtomic($cacheFile, serialize($listing));
+		cleanListingCache($cacheDir);
+	}
+	return $listing;
+}
+
+function cleanListingCache($cacheDir) {
+	$marker = $cacheDir.'/.cleaned';
+	if(is_file($marker) && time() - filemtime($marker) < 86400) {
+		return;
+	}
+	@touch($marker);
+	foreach(scandir($cacheDir) as $name) {
+		$path = $cacheDir.'/'.$name;
+		if($name[0] !== '.' && is_file($path) && time() - filemtime($path) > 30 * 86400) {
+			@unlink($path);
+		}
+	}
 }

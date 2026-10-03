@@ -23,7 +23,7 @@ if(!isValidFile($path, parseFileTypes($settings->allowedFileTypes)) || !isThumbn
 }
 
 $originalUrl = '../'.encodePath($folder['relative']).rawurlencode($name);
-if(empty($settings->thumbnails)) {
+if(!thumbnailsEnabled($settings)) {
 	redirect($originalUrl);
 }
 
@@ -33,25 +33,26 @@ $cacheDir = __DIR__.'/.thumbs';
 $cacheFile = $cacheDir.'/'.sha1($folder['relative'].'/'.$name.'|'.filemtime($path).'|'.filesize($path).'|'.$size).'.'.$format;
 
 if(!is_file($cacheFile)) {
-	if(!is_dir($cacheDir)) {
-		@mkdir($cacheDir, 0755);
-	}
-	if(!is_dir($cacheDir) || !is_writable($cacheDir)) {
+	if(!ensureWritableDir($cacheDir)) {
 		redirect($originalUrl);
 	}
-	$lock = fopen($cacheDir.'/.lock', 'c');
-	if($lock) {
-		flock($lock, LOCK_EX);
+	$lock = acquireSlot($cacheDir, 2, 2.0);
+	if(!$lock) {
+		redirect($originalUrl);
 	}
 	if(!is_file($cacheFile) && !createThumbnail($path, $cacheFile, $size, $format)) {
 		redirect($originalUrl);
 	}
-	if($lock) {
-		flock($lock, LOCK_UN);
-		fclose($lock);
-	}
+	maybeCleanCache($cacheDir, $settings, $cacheFile);
+	flock($lock, LOCK_UN);
+	fclose($lock);
+} else if(time() - filemtime($cacheFile) > 86400) {
+	@touch($cacheFile);
 }
 
+if(!is_file($cacheFile)) {
+	redirect($originalUrl);
+}
 header('Content-Type: image/'.$format);
 header('Content-Length: '.filesize($cacheFile));
 header('Cache-Control: public, max-age=31536000, immutable');
@@ -63,8 +64,63 @@ function notFound() {
 }
 
 function redirect($url) {
+	header('Cache-Control: no-store');
 	header('Location: '.$url, true, 302);
 	exit;
+}
+
+function acquireSlot($cacheDir, $slots, $maxWait) {
+	$deadline = microtime(true) + $maxWait;
+	do {
+		for($i = 0; $i < $slots; $i++) {
+			$lock = @fopen($cacheDir.'/.lock'.$i, 'c');
+			if($lock && flock($lock, LOCK_EX | LOCK_NB)) {
+				return $lock;
+			}
+			if($lock) {
+				fclose($lock);
+			}
+		}
+		usleep(100000);
+	} while(microtime(true) < $deadline);
+	return null;
+}
+
+function maybeCleanCache($cacheDir, $settings, $keep) {
+	$marker = $cacheDir.'/.cleaned';
+	if(is_file($marker) && time() - filemtime($marker) < 3600) {
+		return;
+	}
+	@touch($marker);
+	$maxBytes = (isset($settings->thumbnailCacheMaxMB) ? (int)$settings->thumbnailCacheMaxMB : 200) * 1024 * 1024;
+	$maxAge = 30 * 86400;
+	$files = array();
+	$total = 0;
+	foreach(scandir($cacheDir) as $name) {
+		$path = $cacheDir.'/'.$name;
+		if($name[0] === '.' || $path === $keep || !is_file($path)) {
+			continue;
+		}
+		$time = filemtime($path);
+		if(time() - $time > $maxAge || substr($name, -4) === '.tmp' && time() - $time > 3600) {
+			@unlink($path);
+			continue;
+		}
+		$size = filesize($path);
+		$files[$path] = $time;
+		$total += $size;
+	}
+	if($total <= $maxBytes) {
+		return;
+	}
+	asort($files);
+	foreach($files as $path => $time) {
+		$total -= filesize($path);
+		@unlink($path);
+		if($total <= $maxBytes * 0.9) {
+			break;
+		}
+	}
 }
 
 function createThumbnail($path, $cacheFile, $size, $format) {

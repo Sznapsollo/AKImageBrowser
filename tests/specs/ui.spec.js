@@ -20,7 +20,7 @@ const open = async (page, hash = '') => {
 test('loads the gallery with pager, version and header', async ({ page }) => {
 	await open(page);
 	await expect(page.locator('.imageItem a.fancybox')).toHaveCount(48);
-	await expect(page.locator('.choosePageArea').nth(2)).toContainText('All:');
+	await expect(page.locator('.pagerCount').first()).toHaveText(/^\d+ items$/);
 	await expect(page.locator('.pageFooter')).toContainText(/AKIB\s*AKImageBrowser v\d+\.\d+/);
 	await expect(page.locator('.brandShort')).toHaveText('AKIB');
 });
@@ -92,7 +92,7 @@ test('zoom in stops at the content width', async ({ page }) => {
 	expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
 });
 
-test('settings dialog closes with Esc and backdrop, saves options', async ({ page }) => {
+test('settings dialog closes with Esc and backdrop, applies options live', async ({ page }) => {
 	await open(page);
 	const dialogOpen = () => page.locator('#settingsModal').evaluate(d => d.open);
 	const openOptions = () => page.locator('a.nav-link', { hasText: 'Options' }).click();
@@ -106,19 +106,31 @@ test('settings dialog closes with Esc and backdrop, saves options', async ({ pag
 	await openOptions();
 	await page.locator('#settingsModal a', { hasText: 'reset' }).first().click();
 	await expect(page).toHaveURL(/#\/images\/0\/48$/);
+	const namesShown = () => page.locator('.imageItem a.fancybox .imageText').count();
+	const before = await namesShown();
 	await page.locator('#settingsModal input[type=checkbox]').nth(1).uncheck();
-	await page.locator('#settingsModal button', { hasText: 'Save' }).click();
-	await page.waitForSelector('.imageItem img');
+	expect(await namesShown()).toBe(before / 2);
 	expect(await page.evaluate(() => localStorage.showFileNames)).toBe('false');
+	await page.locator('#tileMode').selectOption('original');
+	await expect(page.locator('.pageContent')).toHaveClass(/tiles-original/);
+	await page.locator('#settingsModal button', { hasText: 'Close' }).click();
+	expect(await dialogOpen()).toBe(false);
+	await page.reload();
+	await page.waitForSelector('.imageItem img');
+	await expect(page.locator('.pageContent')).toHaveClass(/tiles-original/);
 });
 
 test('pager moves between pages', async ({ page }) => {
 	await open(page);
-	await page.locator('.pagerButtons a', { hasText: /^>$/ }).first().click();
+	await page.locator('.pageButton[aria-label="Next page"]').first().click();
 	await expect(page).toHaveURL(/#\/images\/48\/48$/);
-	await expect(page.locator('.imageItem a.fancybox').first()).toBeVisible();
-	await page.locator('.pagerArea select').first().selectOption('12');
+	await expect(page.locator('.pageButton.active').first()).toHaveText('2');
+	await page.locator('.perPage select').selectOption('12');
 	await expect(page.locator('.imageItem a.fancybox')).toHaveCount(12);
+	await page.locator('.pageButton[aria-label="Page 6"]').first().click();
+	await expect(page).toHaveURL(/#\/images\/60\/12$/);
+	await expect(page.locator('.pageButtons').first()).toContainText('…');
+	await expect(page.locator('.pageButton[aria-label="Previous page"]').first()).toBeEnabled();
 });
 
 test('about page shows version', async ({ page }) => {

@@ -4,3 +4,4 @@ tests/.fixtures/
 tests/test-results/
 tests/playwright-report/
 inc/.thumbs/
+inc/.cache/

@@ -1,95 +1,87 @@
-app.component('settings-component' , { 
+app.component('settings-component' , {
 	name: 'settingsComponent',
 	template: `
 		<dialog id="settingsModal" class="settingsDialog" @click="onDialogClick">
 			<div class="dialogHeader">
-				<h5>Options</h5>
-				<button type="button" class="closeButton" aria-label="Close" @click="closeOptions()">&times;</button>
+				<h5>{{ t('options.title') }}</h5>
+				<button type="button" class="closeButton" :aria-label="t('options.close')" @click="closeOptions()">&times;</button>
 			</div>
 			<div class="dialogBody">
 				<div class="formGroup">
-					<label for="imageWidth">Image size: {{imageWidth}}px</label>
+					<label for="imageWidth">{{ t('options.imageSize', {px: prefs.imageWidth}) }}</label>
 					&nbsp;&nbsp;
-					<a href="#" @click.prevent="resetImageWidth()">reset</a>
-					<input id="imageWidth" type="range" min="50" v-bind:max="maxWidth" v-model="imageWidth">
+					<a href="#" @click.prevent="prefs.imageWidth = getDefaultImageWidth()">{{ t('options.reset') }}</a>
+					<input id="imageWidth" type="range" min="50" step="10" v-bind:max="maxWidth" v-model.number="prefs.imageWidth">
 				</div>
 
 				<div class="formGroup">
-					<label for="tileMode">Thumbnails</label>
-					<select id="tileMode" v-model="tileMode">
-						<option value="crop">Square, cropped</option>
-						<option value="fit">Square, whole image</option>
-						<option value="original">Original shape</option>
+					<label for="tileMode">{{ t('options.thumbnails') }}</label>
+					<select id="tileMode" v-model="prefs.tileMode">
+						<option value="crop">{{ t('options.tileCrop') }}</option>
+						<option value="fit">{{ t('options.tileFit') }}</option>
+						<option value="original">{{ t('options.tileOriginal') }}</option>
 					</select>
 				</div>
 
 				<label class="formCheck">
-					<input type="checkbox" v-model="showFileTimes">
-					Show file change times
+					<input type="checkbox" v-model="prefs.showFileTimes">
+					{{ t('options.showTimes') }}
 				</label>
 
 				<label class="formCheck">
-					<input type="checkbox" v-model="showFileNames">
-					Show file names
+					<input type="checkbox" v-model="prefs.showFileNames">
+					{{ t('options.showNames') }}
 				</label>
 
 				<div class="formGroup">
-					<label for="hideDescriptionsBelow">Hide text below image width: {{hideDescriptionsBelow}}px</label>
+					<label for="hideDescriptionsBelow">{{ t('options.hideBelow', {px: prefs.hideDescriptionsBelow}) }}</label>
 					&nbsp;&nbsp;
-					<a href="#" @click.prevent="resetHideDescriptionsBelow()">reset</a>
-					<input id="hideDescriptionsBelow" type="range" step="10" min="0" max="1000" v-model="hideDescriptionsBelow">
+					<a href="#" @click.prevent="prefs.hideDescriptionsBelow = settings.hideDescriptionsStorageDefault">{{ t('options.reset') }}</a>
+					<input id="hideDescriptionsBelow" type="range" step="10" min="0" max="1000" v-model.number="prefs.hideDescriptionsBelow">
 				</div>
 
 				<label class="formCheck">
-					<input type="checkbox" v-model="autoRefresh">
-					Auto refresh
+					<input type="checkbox" v-model="prefs.autoRefresh">
+					{{ t('options.autoRefresh') }}
 				</label>
 
 				<div class="formGroup">
-					<label for="refreshEvery">Refresh every: {{translateRefreshInterval()}}</label>
-					<input id="refreshEvery" type="range" step="10" min="0" max="10000" v-model="autoRefreshInterval">
+					<label for="refreshEvery">{{ t('options.refreshEvery', {time: secondsToHms(prefs.autoRefreshInterval)}) }}</label>
+					<input id="refreshEvery" type="range" step="10" min="0" max="10000" v-model.number="prefs.autoRefreshInterval">
 				</div>
 
 				<div class="formGroup">
-					<label for="resetfileTypes">File types (example: jpg, png, mp4) - empty shows all allowed types</label>
+					<label for="resetfileTypes">{{ t('options.fileTypes') }}</label>
 					&nbsp;&nbsp;
-					<a href="#" @click.prevent="resetfileTypes()">reset</a>
-					<input id="resetfileTypes" type="text" placeholder="all allowed types" v-model="fileTypes" />
+					<a href="#" @click.prevent="prefs.fileTypes = settings.fileTypesDefault">{{ t('options.reset') }}</a>
+					<input id="resetfileTypes" type="text" :placeholder="t('options.fileTypesPlaceholder')" v-model="prefs.fileTypes" />
+				</div>
+
+				<div class="formGroup">
+					<label for="language">{{ t('options.language') }}</label>
+					<select id="language" v-model="prefs.language">
+						<option value="auto">{{ t('options.languageAuto') }}</option>
+						<option value="en">English</option>
+						<option value="pl">Polski</option>
+					</select>
 				</div>
 			</div>
 			<div class="dialogFooter">
-				"Save" will cache these settings for future browsing &nbsp;&nbsp;
-				<button type="button" class="btn btnPrimary" @click="saveOptions()">Save</button>
+				<span class="dialogNote">{{ t('options.note') }}</span>
+				<button type="button" class="btn btnPrimary" @click="closeOptions()">{{ t('options.close') }}</button>
 			</div>
 		</dialog>
 	`,
 	setup() {
-		const route = VueRouter.useRoute()
-		const router = VueRouter.useRouter()
-
 		let mittEventBus = Vue.inject('mittEventBus');
-		let getLocalStorage = Vue.inject('getLocalStorage');
 		let secondsToHms = Vue.inject('secondsToHms');
 		let getDefaultImageWidth = Vue.inject('getDefaultImageWidth');
-
-		const imageWidth = Vue.ref(parseInt(getLocalStorage(settings.imagesWidthStorageName, getDefaultImageWidth())));
-		const tileMode = Vue.ref(getLocalStorage(settings.tileModeStorageName, settings.tileModeDefault));
-		const fileTypes = Vue.ref(getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault));
-		const showFileTimes = Vue.ref(getLocalStorage(settings.fileTimesStorageName, true));
-		const showFileNames = Vue.ref(getLocalStorage(settings.fileNamesStorageName, true));
-		const autoRefresh = Vue.ref(getLocalStorage(settings.autoRefreshStorageName, false));
-		const autoRefreshInterval = Vue.ref(parseInt(getLocalStorage(settings.autoRefreshIntervalStorageName, settings.autoRefreshIntervalDefault)));
-		const hideDescriptionsBelow = Vue.ref(parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault)));
+		let prefs = Vue.inject('prefs');
 
 		const maxWidth = Vue.ref(1000);
 
 		const getDialog = function() {
 			return document.getElementById('settingsModal');
-		}
-
-		const getContentWidth = function() {
-			let inner = document.querySelector('#middleSection .inner');
-			return inner ? inner.clientWidth : 1000;
 		}
 
 		const closeOptions = function() {
@@ -102,78 +94,24 @@ app.component('settings-component' , {
 			}
 		}
 
-		const reloadRoute = function() {
-			router.go()
-		}
-
-		const resetHideDescriptionsBelow = function() {
-			hideDescriptionsBelow.value = settings.hideDescriptionsStorageDefault;
-		}
-
-		const resetfileTypes = function() {
-			fileTypes.value = settings.fileTypesDefault;
-		}
-
-		const resetImageWidth = function() {
-			imageWidth.value = getDefaultImageWidth();
-		}
-
-		const translateRefreshInterval = function() {
-			return secondsToHms(autoRefreshInterval.value)
-		}
-
-		const saveOptions = function() {
-			setLocalStorage(settings.tileModeStorageName, tileMode.value);
-			setLocalStorage(settings.fileTypesStorageName, fileTypes.value);
-			setLocalStorage(settings.imagesWidthStorageName, imageWidth.value);
-			setLocalStorage(settings.fileTimesStorageName, showFileTimes.value);
-			setLocalStorage(settings.fileNamesStorageName, showFileNames.value);
-			setLocalStorage(settings.hideDescriptionsStorageName, hideDescriptionsBelow.value);
-			setLocalStorage(settings.autoRefreshStorageName, autoRefresh.value);
-			setLocalStorage(settings.autoRefreshIntervalStorageName, autoRefreshInterval.value);
-
-			reloadRoute();
+		const showOptions = function() {
+			let inner = document.querySelector('#middleSection .inner');
+			maxWidth.value = Math.max(prefs.imageWidth, inner ? inner.clientWidth - 30 : 1000);
+			getDialog().showModal();
 		}
 
 		Vue.onMounted(function() {
-			console.log('SettingsComponent mounted')
-
-			mittEventBus.on('showSettings', (args) => {
-				if(!args) {
-					args = {};
-				}
-
-				imageWidth.value = parseInt(getLocalStorage(settings.imagesWidthStorageName, getDefaultImageWidth()));
-				tileMode.value = getLocalStorage(settings.tileModeStorageName, settings.tileModeDefault);
-				fileTypes.value = getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault);
-				showFileTimes.value = getLocalStorage(settings.fileTimesStorageName, true);
-				showFileNames.value = getLocalStorage(settings.fileNamesStorageName, true);
-				autoRefresh.value = getLocalStorage(settings.autoRefreshStorageName, false);
-				autoRefreshInterval.value = parseInt(getLocalStorage(settings.autoRefreshIntervalStorageName, settings.autoRefreshIntervalDefault));
-				hideDescriptionsBelow.value = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
-
-				maxWidth.value = getContentWidth();
-				getDialog().showModal();
-			})
+			mittEventBus.on('showSettings', showOptions)
 		})
 
 		return {
-			autoRefresh,
-			autoRefreshInterval,
-			hideDescriptionsBelow,
 			closeOptions,
-			onDialogClick,
-			fileTypes,
-			imageWidth,
+			getDefaultImageWidth,
 			maxWidth,
-			resetHideDescriptionsBelow,
-			resetfileTypes,
-			resetImageWidth,
-			showFileNames,
-			showFileTimes,
-			saveOptions,
-			tileMode,
-			translateRefreshInterval
+			onDialogClick,
+			prefs,
+			secondsToHms,
+			settings
 		}
 	}
 })

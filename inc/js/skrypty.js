@@ -37,6 +37,8 @@ function escapeHtml(text) {
 	return div.innerHTML;
 }
 
+var fancyboxDefaultL10n = Object.assign({}, Fancybox.defaults.l10n);
+
 var COPY_LINK_ICON = '<svg viewBox="0 0 24 24"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>';
 var COPIED_ICON = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
 
@@ -71,7 +73,7 @@ function StartFancyBox()
 	Fancybox.defaults.Hash = false
 	Fancybox.Plugins.Toolbar.defaults.items.copyLink = {
 		type: "button",
-		label: "Copy link",
+		label: translate('en', 'viewer.copyLink'),
 		class: "fancybox__button--copylink",
 		html: COPY_LINK_ICON,
 		click: function(event) {
@@ -79,10 +81,10 @@ function StartFancyBox()
 			var button = event.target.closest('button');
 			copyText(window.location.href).then(function() {
 				button.innerHTML = COPIED_ICON;
-				button.title = 'Link copied';
+				button.title = t('viewer.linkCopied');
 				setTimeout(function() {
 					button.innerHTML = COPY_LINK_ICON;
-					button.title = 'Copy link';
+					button.title = t('viewer.copyLink');
 				}, 1500);
 			});
 		},
