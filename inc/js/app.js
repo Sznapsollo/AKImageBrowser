@@ -12,13 +12,27 @@ var app = Vue.createApp({
 			router.push({ name: 'home'})
 		}
 
+		const theme = Vue.ref(getLocalStorage(settings.themeStorageName, settings.themeDefault))
+
+		const setTheme = function(value) {
+			theme.value = value
+			setLocalStorage(settings.themeStorageName, value)
+			if(value === 'light' || value === 'dark') {
+				document.documentElement.setAttribute('data-theme', value)
+			} else {
+				document.documentElement.removeAttribute('data-theme')
+			}
+		}
+
 		Vue.onMounted(function() {
 			console.log('App mounted');
 		})
 
 		return {
 			redirectToMain,
+			setTheme,
 			showSettings,
+			theme,
 			version: settings.version
 		}
 	}

@@ -46,8 +46,11 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 - videos (mp4, webm, mov, m4v) -> shown with a first-frame thumbnail and played in the viewer
 - filtering of file types -> user can set which file extensions should be displayed (empty = all allowed types)
 - image scaling -> user can adjust the size of images in the gallery (also +/- buttons and keys)
+- uniform tiles -> thumbnails as cropped squares (default), whole image fitted in a square, or original shape [in options]
+- viewer toolbar with slideshow, fullscreen and download
+- light / dark / auto theme (auto follows the system setting, also when it changes) switchable from the header
 - sorting by date or name (newest/oldest, A-Z/Z-A)
-- subfolder browsing with breadcrumbs (folder is kept in the page address)
+- subfolder browsing with breadcrumbs (folder is kept in the page address); folder tiles show the newest image and file count
 - search by file name (kept in the page address, so it survives reload and can be shared)
 - optional showing of image name and image change date in the images list
 - option to hide image descriptions when image size is lower than a specified value
@@ -62,6 +65,7 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 
 ## Changelog
 
+- 1.60 - uniform rounded square tiles (with option), folder preview tiles, light/dark/auto theme switch in header, slideshow/fullscreen/download in viewer, AKIB header, section.css merged into cascade.css.
 - 1.59 - video support (mp4, webm, mov, m4v); viewer file types empty by default = all allowed types. If you saved a file type list in Options before, clear it there to see videos.
 - 1.58 - subfolder browsing with breadcrumbs, Vue 3.2 / vue-router 4.2.
 - 1.57 - sorting (date/name) and file name search.

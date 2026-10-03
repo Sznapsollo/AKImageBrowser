@@ -15,7 +15,7 @@ const ImagesViewer = {
 				<path fill-rule="evenodd" d="M3 6.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"></path>
 			</svg>
 		</button>
-		<div class="pageContent">
+		<div class="pageContent" v-bind:class="'tiles-' + tileMode">
 			<div v-if="timeRemainingLabel != null" class="refreshLabel">Refresh in: {{timeRemainingLabel}}</div>
 			<div v-if="route.query.path || folderNotFound" class="breadcrumbs">
 				<a href="#" @click.prevent="openFolder('')">Home</a>
@@ -41,20 +41,27 @@ const ImagesViewer = {
 			<div class="imageItem" v-for="folder in visibleFolders" :key="'folder:' + folder.path">
 				<a href="#" class="folderLink" @click.prevent="openFolder(folder.path)" v-bind:title="folder.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea folderArea">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z"/></svg>
+						<div class="thumbBox folderBox">
+							<img v-if="folder.preview" v-bind:src="url + folder.preview" loading="lazy" alt=""/>
+							<svg v-else class="folderIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z"/></svg>
+							<span v-if="folder.preview || folder.count" class="folderBadge">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a2 2 0 0 1 .342-1.31z"/></svg>
+								<span v-if="folder.count">{{folder.count}}</span>
+							</span>
+						</div>
 						<div class="imageText">{{folder.name}}</div>
 					</div>
 				</a>
 			</div>
 
 			<div class="imageItem" v-for="image in imagesList" :key="image.url">
-				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url + image.url" v-bind:data-type="image.type === 'video' ? 'html5video' : null" v-bind:data-format="image.format">
+				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url + image.url" v-bind:data-type="image.type === 'video' ? 'html5video' : null" v-bind:data-format="image.format" v-bind:data-download-src="url + image.url" v-bind:title="image.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
-						<div v-if="image.type === 'video'" class="videoThumb">
+						<div v-if="image.type === 'video'" class="thumbBox videoThumb">
 							<video v-lazy-src="url + image.url + '#t=0.1'" preload="metadata" muted playsinline></video>
 							<span class="playIcon"></span>
 						</div>
-						<div v-else>
+						<div v-else class="thumbBox">
 							<img v-bind:src="url + image.url" v-bind:width="image.width" v-bind:height="image.height" loading="lazy" alt=""/>
 						</div>
 						<div v-if="showFileTimes && showDescriptions" class="imageText">{{convertUniXDate(image.changeDate)}}</div>
@@ -102,6 +109,7 @@ const ImagesViewer = {
 
 		const searchText = Vue.ref(route.query.search || '')
 		const sortOrder = Vue.ref(getLocalStorage(settings.sortStorageName, settings.sortDefault))
+		const tileMode = Vue.ref(getLocalStorage(settings.tileModeStorageName, settings.tileModeDefault))
 		let searchTimer = null
 		let loadedRouteKey = null
 		const foldersList = Vue.ref([])
@@ -392,6 +400,7 @@ const ImagesViewer = {
 			onSortChange,
 			route,
 			searchText,
+			tileMode,
 			sortOrder,
 			showDescriptions,
 			showFileNames,

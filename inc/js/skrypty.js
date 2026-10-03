@@ -44,6 +44,9 @@ function StartFancyBox()
 	Fancybox.defaults.Hash = false
 	Fancybox.unbind('[data-fancybox]')
 	Fancybox.bind('[data-fancybox="images"]', {
+		Toolbar: {
+			display: ["counter", "zoom", "slideshow", "fullscreen", "download", "thumbs", "close"],
+		},
 		caption: function (fancybox, carousel, slide) {
 			return escapeHtml(slide.caption);
 		},

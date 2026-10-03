@@ -18,6 +18,28 @@ function getVideoFormat($file) {
 	return isset($formats[$ext]) ? $formats[$ext] : null;
 }
 
+function summarizeFolder($absolute, $fileTypes) {
+	$count = 0;
+	$preview = null;
+	$previewTime = -1;
+	foreach(scandir($absolute) as $file) {
+		$file = (string)$file;
+		$path = $absolute.'/'.$file;
+		if(!isValidFile($path, $fileTypes)) {
+			continue;
+		}
+		$count++;
+		if(!getVideoFormat($file)) {
+			$time = filemtime($path);
+			if($time > $previewTime) {
+				$previewTime = $time;
+				$preview = $file;
+			}
+		}
+	}
+	return array('count' => $count, 'preview' => $preview);
+}
+
 function isValidFile($path, $fileTypes) {
 	return is_file($path) && in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $fileTypes, true);
 }
@@ -185,10 +207,17 @@ foreach(array_slice($files, $startIndex, $itemsPerPage, true) as $file => $chang
 
 $returnFolders = array();
 foreach($folders as $name) {
-	$returnFolders[] = array(
+	$relative = $folder['relative'] === '' ? $name : $folder['relative'].'/'.$name;
+	$returnFolder = array(
 		'name' => $name,
-		'path' => $folder['relative'] === '' ? $name : $folder['relative'].'/'.$name
+		'path' => $relative
 	);
+	if($startIndex === 0) {
+		$summary = summarizeFolder($folderPath.$name, $fileTypes);
+		$returnFolder['count'] = $summary['count'];
+		$returnFolder['preview'] = $summary['preview'] === null ? null : encodePath($relative).rawurlencode($summary['preview']);
+	}
+	$returnFolders[] = $returnFolder;
 }
 
 respond(array(

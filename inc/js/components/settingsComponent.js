@@ -14,6 +14,15 @@ app.component('settings-component' , {
 					<input id="imageWidth" type="range" min="50" v-bind:max="maxWidth" v-model="imageWidth">
 				</div>
 
+				<div class="formGroup">
+					<label for="tileMode">Thumbnails</label>
+					<select id="tileMode" v-model="tileMode">
+						<option value="crop">Square, cropped</option>
+						<option value="fit">Square, whole image</option>
+						<option value="original">Original shape</option>
+					</select>
+				</div>
+
 				<label class="formCheck">
 					<input type="checkbox" v-model="showFileTimes">
 					Show file change times
@@ -64,6 +73,7 @@ app.component('settings-component' , {
 		let getDefaultImageWidth = Vue.inject('getDefaultImageWidth');
 
 		const imageWidth = Vue.ref(parseInt(getLocalStorage(settings.imagesWidthStorageName, getDefaultImageWidth())));
+		const tileMode = Vue.ref(getLocalStorage(settings.tileModeStorageName, settings.tileModeDefault));
 		const fileTypes = Vue.ref(getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault));
 		const showFileTimes = Vue.ref(getLocalStorage(settings.fileTimesStorageName, true));
 		const showFileNames = Vue.ref(getLocalStorage(settings.fileNamesStorageName, true));
@@ -113,6 +123,7 @@ app.component('settings-component' , {
 		}
 
 		const saveOptions = function() {
+			setLocalStorage(settings.tileModeStorageName, tileMode.value);
 			setLocalStorage(settings.fileTypesStorageName, fileTypes.value);
 			setLocalStorage(settings.imagesWidthStorageName, imageWidth.value);
 			setLocalStorage(settings.fileTimesStorageName, showFileTimes.value);
@@ -133,6 +144,7 @@ app.component('settings-component' , {
 				}
 
 				imageWidth.value = parseInt(getLocalStorage(settings.imagesWidthStorageName, getDefaultImageWidth()));
+				tileMode.value = getLocalStorage(settings.tileModeStorageName, settings.tileModeDefault);
 				fileTypes.value = getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault);
 				showFileTimes.value = getLocalStorage(settings.fileTimesStorageName, true);
 				showFileNames.value = getLocalStorage(settings.fileNamesStorageName, true);
@@ -160,6 +172,7 @@ app.component('settings-component' , {
 			showFileNames,
 			showFileTimes,
 			saveOptions,
+			tileMode,
 			translateRefreshInterval
 		}
 	}

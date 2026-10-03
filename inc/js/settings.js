@@ -1,6 +1,6 @@
 var settings = function() {
 	return {
-		version: '1.59',
+		version: '1.60',
 		fileTypesDefault: '',
 		fileTypesStorageName: 'fileTypes',
 		fileTimesStorageName: 'showFileTimes',
@@ -15,6 +15,10 @@ var settings = function() {
 		autoRefreshIntervalStorageName: 'autoRefreshInterval',
 		autoRefreshIntervalDefault: 0,
 		sortStorageName: 'sortOrder',
-		sortDefault: 'dateDesc'
+		sortDefault: 'dateDesc',
+		tileModeStorageName: 'tileMode',
+		tileModeDefault: 'crop',
+		themeStorageName: 'theme',
+		themeDefault: 'auto'
 	}
 }();
