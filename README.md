@@ -45,6 +45,8 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 - lazy loading -> images load when the user actually scrolls to them
 - filtering of image types -> user can set which file extensions should be displayed
 - image scaling -> user can adjust the size of images in the gallery (also +/- buttons and keys)
+- sorting by date or name (newest/oldest, A-Z/Z-A)
+- search by file name (kept in the page address, so it survives reload and can be shared)
 - optional showing of image name and image change date in the images list
 - option to hide image descriptions when image size is lower than a specified value
 - option to auto refresh the gallery, refresh interval can be changed
@@ -57,6 +59,7 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 
 ## Changelog
 
+- 1.57 - sorting (date/name) and file name search.
 - 1.56 - security fixes (file type whitelist, safe captions, file names with special characters), about 10x smaller download (no jQuery/Bootstrap/axios), native lazy loading, version in footer.
 
 ## Note

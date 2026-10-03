@@ -1,6 +1,6 @@
 var settings = function() {
 	return {
-		version: '1.56',
+		version: '1.57',
 		fileTypesDefault: 'jpg, gif, png,',
 		fileTypesStorageName: 'fileTypes',
 		fileTimesStorageName: 'showFileTimes',
@@ -13,6 +13,8 @@ var settings = function() {
 		hideDescriptionsStorageDefault: 100,
 		autoRefreshStorageName: 'autoRefresh',
 		autoRefreshIntervalStorageName: 'autoRefreshInterval',
-		autoRefreshIntervalDefault: 0
+		autoRefreshIntervalDefault: 0,
+		sortStorageName: 'sortOrder',
+		sortDefault: 'dateDesc'
 	}
 }();

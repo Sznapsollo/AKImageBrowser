@@ -340,3 +340,20 @@ A:hover {
 	float: right;
 	margin-right: 10px;
 }
+
+.toolbar {
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0 40px 15px 0;
+}
+
+.searchInput {
+	width: 220px;
+	max-width: 100%;
+	font: inherit;
+	padding: 3px 8px;
+	border: 1px solid #ced4da;
+	border-radius: 4px;
+}

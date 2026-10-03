@@ -16,6 +16,16 @@ function isValidFile($path, $fileTypes) {
 	return is_file($path) && in_array(strtolower(pathinfo($path, PATHINFO_EXTENSION)), $fileTypes, true);
 }
 
+function matchesSearch($name, $search) {
+	if($search === '') {
+		return true;
+	}
+	if(stripos($name, $search) !== false) {
+		return true;
+	}
+	return function_exists('mb_stripos') && @mb_stripos($name, $search, 0, 'UTF-8') !== false;
+}
+
 function respond($data) {
 	header('Content-Type: application/json; charset=utf-8');
 	echo json_encode($data, JSON_INVALID_UTF8_SUBSTITUTE | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -59,14 +69,37 @@ if($settings->deleteOlderFiles) {
 	}
 }
 
+$search = '';
+if(isset($input->search) && is_string($input->search)) {
+	$search = trim($input->search);
+}
+
+$sort = 'dateDesc';
+if(isset($input->sort) && in_array($input->sort, array('dateDesc', 'dateAsc', 'nameAsc', 'nameDesc'), true)) {
+	$sort = $input->sort;
+}
+
 $files = array();
 foreach(scandir($pathPrefix) as $file) {
 	$path = $pathPrefix.$file;
-	if(isValidFile($path, $fileTypes)) {
+	if(isValidFile($path, $fileTypes) && matchesSearch((string)$file, $search)) {
 		$files[$file] = filemtime($path);
 	}
 }
-arsort($files);
+
+switch($sort) {
+	case 'dateAsc':
+		asort($files);
+		break;
+	case 'nameAsc':
+		uksort($files, 'strnatcasecmp');
+		break;
+	case 'nameDesc':
+		uksort($files, function($a, $b) { return strnatcasecmp((string)$b, (string)$a); });
+		break;
+	default:
+		arsort($files);
+}
 
 $returnFiles = array();
 foreach(array_slice($files, $startIndex, $itemsPerPage, true) as $file => $changeDate) {

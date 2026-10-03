@@ -1,29 +1,15 @@
-const AboutComponent = { 
+const AboutComponent = {
 	name: 'aboutComponent',
 	template: `
 	<div style="padding: 20px; text-align: left">
 		<h2>About</h2>
-		<strong>AKImageBrowser</strong> is quick deployable web image browser/gallery that will display images from given folder. It bases on php (backend side) and Vue (frontend side).
-		<p/>
-		Github link: <a target="_blank" href="https://github.com/Sznapsollo/AKImageBrowser">https://github.com/Sznapsollo/AKImageBrowser</a>
-		<p/>
-		AKImageBrowser has some features that make image browsing a bit more pleasant:
-		<ul>
-			<li>paging with options to choose how many images per page should be displayed</li>
-			<li>lazy loading -> images will load when user actually displays them</li>
-			<li>filtering of image types -> user can set what type of file extensions should be displayed [in options]</li>
-			<li>image scaling -> user can adjust size of images to be displayed in gallery. [in options]</li>
-			<li>optional showing image name and image change date in images list</li>
-			<li>option to hide image descriptions whenl image size lower than specified value</li>
-			<li>option to autorefresh gallery, refresh interval can be changed</li>
-			<li>(settings file) option to hide images behind some secret key - it is not really any security measure but comes in handy sometimes</li>
-			<li>(settings file) option to auto delete older files</li>
-		</ul>
+		<p><strong>AKImageBrowser</strong> v{{version}} - quick deployable web image browser/gallery that displays images from the folder it is copied into.</p>
+		<p>Features, settings and updates: <a target="_blank" href="https://github.com/Sznapsollo/AKImageBrowser">https://github.com/Sznapsollo/AKImageBrowser</a></p>
 	</div>
 	`,
 	setup() {
-		Vue.onMounted(function() {
-			console.log('AboutComponent mounted')
-		})
+		return {
+			version: settings.version
+		}
 	}
 }

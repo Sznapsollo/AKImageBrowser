@@ -17,6 +17,15 @@ const ImagesViewer = {
 		</button>
 		<div class="pageContent">
 			<div v-if="timeRemainingLabel != null" class="refreshLabel">Refresh in: {{timeRemainingLabel}}</div>
+			<div class="toolbar">
+				<input type="search" class="searchInput" placeholder="Search file name" v-model="searchText" @input="onSearchInput" aria-label="Search file name">
+				<select v-model="sortOrder" @change="onSortChange" aria-label="Sort order">
+					<option value="dateDesc">Newest first</option>
+					<option value="dateAsc">Oldest first</option>
+					<option value="nameAsc">Name A-Z</option>
+					<option value="nameDesc">Name Z-A</option>
+				</select>
+			</div>
 			<div v-if="!noResults">
 				<pager-component></pager-component>
 			</div>
@@ -35,7 +44,8 @@ const ImagesViewer = {
 				</a>
 			</div>
 			
-			<div v-if="noResults" class="noResults">There are no results for given search criteria. Perhaps folder is empty or it does not contain any image types defined in options.</div>
+			<div v-if="noResults && route.query.search" class="noResults">No images match "{{route.query.search}}"</div>
+			<div v-else-if="noResults" class="noResults">There are no results for given search criteria. Perhaps folder is empty or it does not contain any image types defined in options.</div>
 			<div v-if="viewerMessage" class="noResults">{{viewerMessage}}</div>
 
 			<div v-if="!noResults">
@@ -71,9 +81,10 @@ const ImagesViewer = {
 		let hideDescriptionsBelow = parseInt(getLocalStorage(settings.hideDescriptionsStorageName, settings.hideDescriptionsStorageDefault));
 		const imageAreaStyle = Vue.ref({})
 
-		// const startIndex = Vue.ref(route.params.startIndex)
-		// const itemsPerPage = Vue.ref(route.params.itemsPerPage)
-		// const imageName = Vue.ref(route.params.imageName)
+		const searchText = Vue.ref(route.query.search || '')
+		const sortOrder = Vue.ref(getLocalStorage(settings.sortStorageName, settings.sortDefault))
+		let searchTimer = null
+		let loadedRouteKey = null
 		let mittEventBus = Vue.inject('mittEventBus');
 		let autoRefreshInterval = null
 		let autoRefresh = null
@@ -100,6 +111,7 @@ const ImagesViewer = {
 			showDescriptions.value = (imageWidth > hideDescriptionsBelow);
 
 			imageAreaStyle.value = {width: imageWidth + 'px'}
+			loadedRouteKey = getRouteKey()
 			imagesList.value = []
 			dataLoading.value = true;
 			
@@ -140,7 +152,41 @@ const ImagesViewer = {
 			}
 			router.push({
 				name: 'images',
-				params
+				params,
+				query: route.query
+			})
+		}
+
+		function getRouteKey() {
+			if(route.name !== 'images') {
+				return null
+			}
+			return [route.params.startIndex, route.params.itemsPerPage, route.query.search || ''].join('|')
+		}
+
+		const onSearchInput = function() {
+			clearTimeout(searchTimer)
+			searchTimer = setTimeout(function() {
+				searchTimer = null
+				let search = searchText.value.trim()
+				router.replace({
+					name: 'images',
+					params: {startIndex: 0, itemsPerPage: route.params.itemsPerPage},
+					query: search ? {search: search} : {}
+				})
+			}, 300)
+		}
+
+		const onSortChange = function() {
+			setLocalStorage(settings.sortStorageName, sortOrder.value)
+			if(parseInt(route.params.startIndex) === 0) {
+				initializeData()
+				return
+			}
+			router.push({
+				name: 'images',
+				params: {startIndex: 0, itemsPerPage: route.params.itemsPerPage},
+				query: route.query
 			})
 		}
 
@@ -153,6 +199,8 @@ const ImagesViewer = {
 				startIndex: route.params.startIndex, 
 				itemsPerPage: route.params.itemsPerPage, 
 				fileTypes: fileTypes,
+				sort: sortOrder.value,
+				search: route.query.search || '',
 				secretWord: sessionStorage.getItem("secretWord")
 			}
 
@@ -261,29 +309,16 @@ const ImagesViewer = {
 			clearInterval(timerAutoRefresh)
 		})
 
-		Vue.watch(
-			() => route.params.itemsPerPage,
-			async itemsPerPageParam => {
-				if(itemsPerPageParam == null) {
-					return
-				}
-				console.log('itemsPerPage changed', itemsPerPageParam)
-				initializeData()
-				mittEventBus.emit('rebuildPager', {});
+		Vue.watch(getRouteKey, function(routeKey) {
+			if(routeKey == null || routeKey === loadedRouteKey) {
+				return
 			}
-		)
-
-		Vue.watch(
-			() => route.params.startIndex,
-			async startIndexParam => {
-				if(startIndexParam == null) {
-					return
-				}
-				console.log('startIndex changed', startIndexParam)
-				initializeData()
-				mittEventBus.emit('rebuildPager', {});
+			if(!searchTimer) {
+				searchText.value = route.query.search || ''
 			}
-		)
+			initializeData()
+			mittEventBus.emit('rebuildPager', {});
+		})
 
 		return {
 			allCount,
@@ -293,6 +328,11 @@ const ImagesViewer = {
 			imagesList,
 			viewerMessage,
 			noResults,
+			onSearchInput,
+			onSortChange,
+			route,
+			searchText,
+			sortOrder,
 			showDescriptions,
 			showFileNames,
 			showFileTimes,

@@ -47,16 +47,16 @@ app.component('pager-component' , {
 			let itemsPerPage = parseInt(route.params.itemsPerPage, 0);
 			switch (mode) {
 				case 'first':
-					router.push({ name: 'images', params: {startIndex: firstNode, itemsPerPage: itemsPerPage} })
+					router.push({ name: 'images', params: {startIndex: firstNode, itemsPerPage: itemsPerPage}, query: route.query })
 					break;
 				case 'previous':
-					router.push({ name: 'images', params: {startIndex: previousNode, itemsPerPage: itemsPerPage} })
+					router.push({ name: 'images', params: {startIndex: previousNode, itemsPerPage: itemsPerPage}, query: route.query })
 					break;
 				case 'next':
-					router.push({ name: 'images', params: {startIndex: nextNode, itemsPerPage: itemsPerPage} })
+					router.push({ name: 'images', params: {startIndex: nextNode, itemsPerPage: itemsPerPage}, query: route.query })
 					break;
 				case 'last':
-					router.push({ name: 'images', params: {startIndex: lastNode, itemsPerPage: itemsPerPage} })
+					router.push({ name: 'images', params: {startIndex: lastNode, itemsPerPage: itemsPerPage}, query: route.query })
 					break;
 			}
 		}
@@ -64,12 +64,12 @@ app.component('pager-component' , {
 		const updateItemsPerPage = function() 
 		{
 			setLocalStorage("itemsPerPage", selectedItemsPerPage.value);
-			router.push({ name: 'images', params: {startIndex: 0, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)} })
+			router.push({ name: 'images', params: {startIndex: 0, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)}, query: route.query })
 		}
 		
 		const updateSelectedPage = function() 
 		{
-			router.push({ name: 'images', params: {startIndex: selectedPage.value * route.params.itemsPerPage, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)} })
+			router.push({ name: 'images', params: {startIndex: selectedPage.value * route.params.itemsPerPage, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault)}, query: route.query })
 		}
 	
 		const canGoBack = function()
