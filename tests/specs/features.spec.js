@@ -44,7 +44,7 @@ test.describe('folder listing cache and refresh versions', () => {
 	test('auto refresh only re-renders when the folder changed', async ({ page }) => {
 		await page.goto(server.url);
 		await page.evaluate(() => { localStorage.autoRefresh = 'true'; localStorage.autoRefreshInterval = '1'; });
-		const statuses = [];
+		let statuses = [];
 		page.on('response', async r => {
 			if (r.url().includes('images.php')) {
 				statuses.push((await r.json()).status === 0 ? 'unchanged' : 'full');
@@ -53,8 +53,10 @@ test.describe('folder listing cache and refresh versions', () => {
 		await page.reload();
 		await page.waitForSelector('.imageItem');
 		const count = parseInt(await page.locator('.pagerCount').first().textContent());
-		await expect.poll(() => statuses.length, { timeout: 5000 }).toBeGreaterThanOrEqual(3);
-		expect(statuses.slice(1).every(s => s === 'unchanged')).toBe(true);
+		await page.waitForTimeout(500);
+		statuses = [];
+		await expect.poll(() => statuses.length, { timeout: 5000 }).toBeGreaterThanOrEqual(2);
+		expect(statuses.every(s => s === 'unchanged')).toBe(true);
 		fs.copyFileSync(path.join(dir, 'img1.jpg'), path.join(dir, 'zz-refresh.jpg'));
 		await expect(page.locator('.pagerCount').first()).toHaveText(`${count + 1} items`, { timeout: 5000 });
 		await expect(page.locator('.imageItem a.fancybox').first()).toHaveAttribute('href', 'zz-refresh.jpg');
@@ -120,12 +122,12 @@ test.describe('navigation memory and keyboard', () => {
 		await page.setViewportSize({ width: 1280, height: 600 });
 		await open(page, '/#/images/0/48');
 		await page.evaluate(() => window.scrollTo(0, 700));
-		const tile = page.locator('.imageItem a.fancybox').nth(12);
-		await tile.click();
+		await expect.poll(() => page.evaluate(() => Math.round(scrollY))).toBe(700);
+		await page.evaluate(() => document.querySelectorAll('.imageItem a.fancybox')[12].click());
 		await expect(page.locator('.fancybox__container')).toBeVisible();
 		await page.keyboard.press('Escape');
 		await expect(page.locator('.fancybox__container')).toHaveCount(0);
-		await expect.poll(() => page.evaluate(() => Math.round(scrollY))).toBeGreaterThan(400);
+		await expect.poll(() => page.evaluate(() => Math.round(scrollY))).toBe(700);
 	});
 
 	test('arrow keys move between tiles, Enter opens', async ({ page }) => {
@@ -145,6 +147,30 @@ test.describe('navigation memory and keyboard', () => {
 		await expect(links.last()).toBeFocused();
 		await focused.press('Enter');
 		await expect(page.locator('.fancybox__container')).toBeVisible();
+	});
+
+	test('auto refresh pauses on the About page and the gallery stays intact', async ({ page }) => {
+		await page.goto('/');
+		await page.evaluate(() => { localStorage.autoRefresh = 'true'; localStorage.autoRefreshInterval = '1'; });
+		await open(page, '/#/images/0/12?path=2024');
+		await expect(page.locator('.pagerCount').first()).toHaveText('18 items');
+		await page.locator('.nav-link', { hasText: 'About' }).click();
+		await expect(page).toHaveURL(/#\/about$/);
+		let requests = 0;
+		page.on('request', r => r.url().includes('images.php') && requests++);
+		await page.waitForTimeout(2500);
+		expect(requests).toBe(0);
+		await page.goBack();
+		await expect(page.locator('.pagerCount').first()).toHaveText('18 items');
+		await expect(page.locator('.imageItem a.fancybox')).toHaveCount(12);
+	});
+
+	test('back from the start page is not trapped', async ({ page }) => {
+		await page.goto('/#/about');
+		await page.goto('/#/');
+		await expect(page).toHaveURL(/#\/images\/0\/\d+$/);
+		await page.goBack();
+		await expect(page).toHaveURL(/#\/about$/);
 	});
 
 	test('images have their file name as alt text', async ({ page }) => {

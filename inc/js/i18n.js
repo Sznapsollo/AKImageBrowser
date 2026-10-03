@@ -2,6 +2,7 @@ var translations = {
 	en: {
 		'nav.options': 'Options',
 		'nav.about': 'About',
+		'nav.top': 'Top',
 		'theme.group': 'Color theme',
 		'theme.light': 'Light mode',
 		'theme.auto': 'Auto (system) mode',
@@ -62,6 +63,7 @@ var translations = {
 	pl: {
 		'nav.options': 'Opcje',
 		'nav.about': 'O programie',
+		'nav.top': 'Do góry',
 		'theme.group': 'Motyw kolorów',
 		'theme.light': 'Tryb jasny',
 		'theme.auto': 'Tryb automatyczny (systemowy)',

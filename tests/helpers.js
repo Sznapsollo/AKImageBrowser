@@ -3,10 +3,20 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+const PROJECTS = ['chromium', 'firefox', 'webkit'];
+
+function currentProject() {
+	try {
+		return require('@playwright/test').test.info().project.name;
+	} catch (e) {
+		return null;
+	}
+}
 const FIXTURES = path.join(__dirname, '.fixtures');
 
 function buildSite(name, { mode = 'full', settings = {} } = {}) {
-	const dir = path.join(FIXTURES, name);
+	const project = currentProject();
+	const dir = path.join(FIXTURES, project ? `${name}-${project}` : name);
 	fs.rmSync(dir, { recursive: true, force: true });
 	fs.rmSync(dir + '-outside', { recursive: true, force: true });
 	fs.mkdirSync(dir, { recursive: true });
@@ -19,7 +29,9 @@ function buildSite(name, { mode = 'full', settings = {} } = {}) {
 }
 
 async function startServer(dir, port) {
-	const server = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', dir], { stdio: 'ignore' });
+	port += Math.max(0, PROJECTS.indexOf(currentProject())) * 20;
+	const env = Object.assign({}, process.env, { PHP_CLI_SERVER_WORKERS: '4' });
+	const server = spawn('php', ['-S', `127.0.0.1:${port}`, '-t', dir], { stdio: 'ignore', env });
 	const url = `http://127.0.0.1:${port}/`;
 	for (let i = 0; i < 50; i++) {
 		try {

@@ -82,6 +82,7 @@ AKImageBrowser has some features that make image browsing a bit more pleasant:
 
 ## Changelog
 
+- 1.63 - tests in Chromium, Firefox and WebKit; fixes from a code review: auto refresh paused while on About, Back no longer trapped on the start page, folders with non-UTF-8 names open, all EXIF orientations for thumbnails and correct portrait sizes, no thumbnail requests for small images, cache folders blocked from direct web access, faster pickup of files overwritten in place (30 s), Polish "Top" button, cleanups.
 - 1.62 - thumbnails on by default (`'auto'`) with safe generation limits and cache cleanup, folder listing cache (about 5x faster for big folders), new pager, instant options, Back keeps scroll position, keyboard tile navigation, smarter auto refresh, Polish translation, GitHub test workflow.
 - 1.61 - optional thumbnails, video length on tiles, image info and copy link in viewer, `/` search shortcut, centered layout with footer, browser test suite.
 - 1.60 - uniform rounded square tiles (with option), folder preview tiles, light/dark/auto theme switch in header, slideshow/fullscreen/download in viewer, AKIB header, section.css merged into cascade.css.
@@ -97,9 +98,11 @@ Nothing needs to be built. The `tests` folder (not part of the release zip) has 
 ```bash
 cd tests
 npm install
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npx playwright test
 ```
+
+Every test runs in Chromium, Firefox and WebKit (Safari's engine).
 
 `PW_CHANNEL=chrome npx playwright test` runs them in installed Google Chrome, which also plays H.264 videos. The same tests run on GitHub Actions on every push (`.github/workflows/tests.yml`).
 

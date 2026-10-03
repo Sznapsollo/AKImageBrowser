@@ -25,14 +25,18 @@ test('caption shows dimensions and file size', async ({ page }) => {
 	await expect(page.locator('.fancybox__slide.is-selected .fancybox__caption')).toContainText(/wide\.png .* · 900×200 · \d+(\.\d)? (B|KB)/);
 });
 
-test('copy link button copies the current url', async ({ page, context }) => {
-	await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+test('copy link button copies the current url', async ({ page, context, browserName }) => {
+	if (browserName === 'chromium') {
+		await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+	}
 	await open(page);
 	await page.locator('a[href="wide.png"]').click();
 	const button = page.locator('.fancybox__toolbar button[title="Copy link"]');
 	await button.click();
 	await expect(page.locator('.fancybox__toolbar button[title="Link copied"]')).toBeVisible();
-	expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(page.url());
+	if (browserName === 'chromium') {
+		expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(page.url());
+	}
 });
 
 test('video tiles show duration', async ({ page }) => {

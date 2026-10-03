@@ -64,9 +64,26 @@ test.describe('folders', () => {
 	test('lists visible subfolders with preview and count', async () => {
 		const root = await api(MAIN_URL, {});
 		const folders = Object.fromEntries(root.folders.map(f => [f.name, f]));
-		expect(Object.keys(folders).sort()).toEqual(['2024', 'Żółwie']);
+		expect(Object.keys(folders)).toEqual(expect.arrayContaining(['2024', 'Żółwie']));
+		expect(Object.keys(folders).length).toBeLessThanOrEqual(3);
 		expect(folders['2024'].count).toBe(18);
 		expect(folders['2024'].preview).toBe('2024/p1.jpg');
+	});
+
+	test('folder with an invalid utf-8 name can be opened', async () => {
+		const root = await api(MAIN_URL, {});
+		const bad = root.folders.find(f => f.path.includes('%FF'));
+		test.skip(!bad, 'file system does not allow invalid utf-8 names');
+		expect(bad.path).toBe('bad%FF%20folder');
+		const inside = await api(MAIN_URL, { path: bad.path });
+		expect(inside.images.map(i => i.name)).toEqual(['inside.jpg']);
+		expect(inside.images[0].url).toBe('bad%FF%20folder/inside.jpg');
+	});
+
+	test('inc folder cannot be reached in any letter case', async () => {
+		for (const path of ['INC', 'Inc', 'inc']) {
+			expect((await api(MAIN_URL, { path })).status).toBe(-3);
+		}
 	});
 
 	test('nested folder urls are encoded per segment', async () => {

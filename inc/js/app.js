@@ -102,11 +102,11 @@ const secondsToHms = function(d, emptyValue) {
 	return parts.join(', ')
 }
 
-const convertUniXDate = function(unixTimestamp) {
+const formatDate = function(unixTimestamp) {
 	try {
 		return new Date(unixTimestamp * 1000).toLocaleString(currentLanguage.value)
 	} catch(e) {
-		console.warn('convertUniXDate', unixTimestamp)
+		console.warn('formatDate', unixTimestamp)
 	}
 }
 
@@ -146,7 +146,7 @@ app.provide('prefs', prefs);
 app.provide('getLocalStorage', getLocalStorage);
 app.provide('setLocalStorage', setLocalStorage);
 app.provide('secondsToHms', secondsToHms);
-app.provide('convertUniXDate', convertUniXDate);
+app.provide('formatDate', formatDate);
 app.provide('getDefaultImageWidth', getDefaultImageWidth)
 
 const lazyVideoObserver = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(function(entries) {

@@ -4,11 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="all">
-<meta name="revisit-after" content="3 days">
-<meta name="distribution" content="global">
 <meta name="description" content="AKImageBrowser - quick deployable web image browser/gallery." />
-<meta name="keywords" content="AKImageBrowser, Sznapsollo, Web gallery, image gallery" />
 <meta name="homepage" content="https://github.com/Sznapsollo/AKImageBrowser">
 
 <script>try { var akibTheme = localStorage.getItem('theme'); if(akibTheme === 'light' || akibTheme === 'dark') { document.documentElement.setAttribute('data-theme', akibTheme); } } catch(e) {}</script>
@@ -23,7 +19,6 @@
 <script defer src="inc/js/app.js"></script>
 <script defer src="inc/js/components/imagesViewer.js"></script>
 <script defer src="inc/js/components/aboutComponent.js"></script>
-<script defer src="inc/js/components/homeComponent.js"></script>
 <script defer src="inc/js/components/settingsComponent.js"></script>
 <script defer src="inc/js/components/pagerComponent.js"></script>
 <script defer src="inc/js/routes.js"></script>
@@ -39,7 +34,7 @@
 
 <body id="app">
 	<div id="pageWrapper">
-		<button type="button" id="return-to-top">Top</button>
+		<button type="button" id="return-to-top">{{ t('nav.top') }}</button>
 
 		<nav class="navbar">
 			<a class="navbar-brand pointer" @click="redirectToMain()" title="AKImageBrowser"><span class="brandShort">AKIB</span><span class="brandFull">AKImageBrowser</span></a>

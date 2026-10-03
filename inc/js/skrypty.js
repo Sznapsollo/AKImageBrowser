@@ -11,7 +11,7 @@ document.addEventListener('click', function(e) {
 });
 
 function manageKeyDown(e) {
-	if(!e || !e.key || !window) {
+	if(!e || !e.key) {
 		return
 	}
 	if(typeof mittEventBus === 'undefined') {
@@ -60,7 +60,7 @@ function copyText(text) {
 	return Promise.resolve();
 }
 
-function manageHash(href) {
+function notifyImageChange(href) {
 	if(typeof mittEventBus === 'undefined') {
 		return
 	}
@@ -99,10 +99,10 @@ function StartFancyBox()
 		},
 		on: {
 			destroy : (fancybox) => {
-				manageHash();
+				notifyImageChange();
 			},
 			done: (fancybox, slide) => {
-				manageHash(slide.src);
+				notifyImageChange(slide.src);
 			},
 		},
 	});

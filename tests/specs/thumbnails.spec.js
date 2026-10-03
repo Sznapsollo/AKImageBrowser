@@ -4,7 +4,7 @@ const path = require('path');
 const { api, buildSite, startServer, MAIN_URL } = require('../helpers');
 
 test('auto mode turns thumbnails on when GD and a writable inc folder are available', async () => {
-	const data = await api(MAIN_URL, { search: 'img1.jpg' });
+	const data = await api(MAIN_URL, { search: 'big.jpg' });
 	expect(data.images[0].thumb).toMatch(/^inc\/thumb\.php/);
 });
 
@@ -48,6 +48,24 @@ test.describe('with thumbnails enabled', () => {
 		}
 		const folder = data.folders.find(f => f.name === '2024');
 		expect(folder.previewThumb).toMatch(/^inc\/thumb\.php\?f=2024%2Fp1\.jpg/);
+	});
+
+	test('images not bigger than the thumbnail size get no thumb url', async () => {
+		fs.mkdirSync(path.join(dir, 'smallies'), { recursive: true });
+		fs.copyFileSync(path.join(__dirname, '..', '..', 'inc', 'favicon.png'), path.join(dir, 'smallies', 'icon.png'));
+		const data = await api(server.url, { path: 'smallies' });
+		expect(data.images[0].thumb).toBeNull();
+	});
+
+	test('cache folders are protected from direct web access', async ({ request }) => {
+		const old = Date.now() / 1000 - 60;
+		fs.utimesSync(dir, old, old);
+		await api(server.url, {});
+		await request.get(server.url + 'inc/thumb.php?f=big.jpg');
+		for (const folder of ['.thumbs', '.cache']) {
+			expect(fs.readFileSync(path.join(dir, 'inc', folder, '.htaccess'), 'utf8')).toContain('Require all denied');
+			expect(fs.existsSync(path.join(dir, 'inc', folder, 'index.html'))).toBe(true);
+		}
 	});
 
 	test('thumbnail is small, cached and keeps aspect ratio', async ({ request }) => {

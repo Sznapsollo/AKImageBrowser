@@ -18,8 +18,8 @@ test.describe('video', () => {
 		expect(await video.evaluate(v => v.error)).toBeNull();
 	});
 
-	test('mp4 plays (needs a browser with H.264, e.g. PW_CHANNEL=chrome)', async ({ page }) => {
-		test.skip(!process.env.PW_CHANNEL, 'bundled Chromium has no H.264');
+	test('mp4 plays (needs a browser with H.264, e.g. PW_CHANNEL=chrome)', async ({ page, browserName }) => {
+		test.skip(browserName !== 'chromium' || !process.env.PW_CHANNEL, 'only Google Chrome is guaranteed to have H.264');
 		await page.goto('/');
 		await page.locator('a[href="clip.mp4"]').click();
 		const video = page.locator('.fancybox__slide.is-selected video');

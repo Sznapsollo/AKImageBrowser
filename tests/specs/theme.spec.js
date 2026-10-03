@@ -32,9 +32,12 @@ test('forced modes override the system and are remembered', async ({ page }) => 
 test('forced theme is applied before the app scripts run', async ({ page }) => {
 	await page.goto('/');
 	await page.evaluate(() => localStorage.theme = 'dark');
-	await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
-		window.__early = getComputedStyle(document.body).backgroundColor;
+	await page.addInitScript(() => document.addEventListener('readystatechange', () => {
+		if (document.readyState === 'interactive') {
+			window.__early = document.documentElement.getAttribute('data-theme') + '/' + typeof Vue;
+		}
 	}));
 	await page.reload();
-	expect(await page.evaluate(() => window.__early)).toBe(DARK);
+	expect(await page.evaluate(() => window.__early)).toBe('dark/undefined');
+	expect(await background(page)).toBe(DARK);
 });

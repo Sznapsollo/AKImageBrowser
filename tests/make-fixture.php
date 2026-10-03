@@ -58,6 +58,7 @@ makeImage("$dir/IMG10.JPG", 400, 300, 'IMG10', $now - 130);
 makeImage("$dir/wide.png", 900, 200, 'wide', $now - 140);
 makeImage("$dir/tall.jpg", 200, 700, 'tall', $now - 150);
 makeImage("$dir/anim.gif", 300, 200, 'gif', $now - 170);
+makeImage("$dir/big.jpg", 1200, 900, 'big', $now - 180);
 @makeImage("$dir/bad\xff.jpg", 300, 200, 'bad utf8', $now - 160);
 file_put_contents("$dir/notes.txt", 'not an image');
 touch("$dir/notes.txt", $now - 86400 * 30);
@@ -77,6 +78,10 @@ for($i = 1; $i <= 3; $i++) {
 	makeImage("$dir/2024/vacation #1/v$i.jpg", 400, 300, "vac v$i", $now - $i * 60);
 	makeImage("$dir/.hidden/h$i.jpg", 400, 300, "hidden $i", $now);
 	makeImage("$dir/Żółwie/z$i.jpg", 400, 300, "zolwie $i", $now);
+}
+
+if(@mkdir("$dir/bad\xff folder", 0777, true)) {
+	makeImage("$dir/bad\xff folder/inside.jpg", 400, 300, 'bad folder', $now);
 }
 
 $outside = $dir.'-outside';

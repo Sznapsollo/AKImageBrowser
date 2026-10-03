@@ -27,7 +27,7 @@ if(!thumbnailsEnabled($settings)) {
 	redirect($originalUrl);
 }
 
-$size = isset($settings->thumbnailSize) ? max(50, (int)$settings->thumbnailSize) : 400;
+$size = getThumbnailSize($settings);
 $format = function_exists('imagewebp') ? 'webp' : 'jpeg';
 $cacheDir = __DIR__.'/.thumbs';
 $cacheFile = $cacheDir.'/'.sha1($folder['relative'].'/'.$name.'|'.filemtime($path).'|'.filesize($path).'|'.$size).'.'.$format;
@@ -96,9 +96,9 @@ function maybeCleanCache($cacheDir, $settings, $keep) {
 	$maxAge = 30 * 86400;
 	$files = array();
 	$total = 0;
-	foreach(scandir($cacheDir) as $name) {
+	foreach(scandir($cacheDir) ?: array() as $name) {
 		$path = $cacheDir.'/'.$name;
-		if($name[0] === '.' || $path === $keep || !is_file($path)) {
+		if($name[0] === '.' || $name === 'index.html' || $path === $keep || !is_file($path)) {
 			continue;
 		}
 		$time = filemtime($path);
@@ -170,20 +170,20 @@ function createThumbnail($path, $cacheFile, $size, $format) {
 }
 
 function applyExifOrientation($image, $path) {
-	if(!function_exists('exif_read_data')) {
-		return $image;
+	$orientation = getExifOrientation($path);
+	$flips = array(2 => IMG_FLIP_HORIZONTAL, 4 => IMG_FLIP_VERTICAL, 5 => IMG_FLIP_VERTICAL, 7 => IMG_FLIP_HORIZONTAL);
+	$angles = array(3 => 180, 5 => -90, 6 => -90, 7 => -90, 8 => 90);
+	if(isset($flips[$orientation])) {
+		imageflip($image, $flips[$orientation]);
 	}
-	$exif = @exif_read_data($path);
-	$angles = array(3 => 180, 6 => -90, 8 => 90);
-	if(!$exif || !isset($exif['Orientation']) || !isset($angles[$exif['Orientation']])) {
-		return $image;
+	if(isset($angles[$orientation])) {
+		$rotated = imagerotate($image, $angles[$orientation], 0);
+		if($rotated) {
+			imagedestroy($image);
+			$image = $rotated;
+		}
 	}
-	$rotated = imagerotate($image, $angles[$exif['Orientation']], 0);
-	if(!$rotated) {
-		return $image;
-	}
-	imagedestroy($image);
-	return $rotated;
+	return $image;
 }
 
 function ensureMemory($needed) {

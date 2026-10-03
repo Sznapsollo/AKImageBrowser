@@ -22,8 +22,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Install test dependencies
         working-directory: tests
-        run: npm ci
-      - name: Run tests in Google Chrome
+        run: npm ci && npx playwright install --with-deps firefox webkit
+      - name: Run tests (Chrome, Firefox, WebKit)
         working-directory: tests
         env:
           PW_CHANNEL: chrome

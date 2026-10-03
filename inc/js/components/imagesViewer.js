@@ -37,7 +37,7 @@ const ImagesViewer = {
 				<a href="#" class="folderLink" @click.prevent="openFolder(folder.path)" v-bind:title="folder.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea folderArea">
 						<div class="thumbBox folderBox">
-							<img v-if="folder.preview" v-bind:src="folder.previewThumb || url + folder.preview" loading="lazy" v-bind:alt="folder.name"/>
+							<img v-if="folder.preview" v-bind:src="folder.previewThumb || folder.preview" loading="lazy" v-bind:alt="folder.name"/>
 							<svg v-else class="folderIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${FOLDER_PATH}</svg>
 							<span v-if="folder.preview || folder.count" class="folderBadge">
 								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${FOLDER_PATH}</svg>
@@ -50,17 +50,17 @@ const ImagesViewer = {
 			</div>
 
 			<div class="imageItem" v-for="image in imagesList" :key="image.url">
-				<a class="fancybox" v-bind:data-caption="getCaption(image)" v-bind:data-thumb="image.thumb || null" data-fancybox="images" v-bind:href="url + image.url" v-bind:data-type="image.type === 'video' ? 'html5video' : null" v-bind:data-format="image.format" v-bind:data-download-src="url + image.url" v-bind:title="image.name">
+				<a class="fancybox" v-bind:data-caption="getCaption(image)" v-bind:data-thumb="image.thumb || null" data-fancybox="images" v-bind:href="image.url" v-bind:data-type="image.type === 'video' ? 'html5video' : null" v-bind:data-format="image.format" v-bind:data-download-src="image.url" v-bind:title="image.name">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
 						<div v-if="image.type === 'video'" class="thumbBox videoThumb">
-							<video v-lazy-src="url + image.url + '#t=0.1'" preload="metadata" muted playsinline @loadedmetadata="image.duration = $event.target.duration" v-bind:aria-label="image.name"></video>
+							<video v-lazy-src="image.url + '#t=0.1'" preload="metadata" muted playsinline @loadedmetadata="image.duration = $event.target.duration" v-bind:aria-label="image.name"></video>
 							<span class="playIcon"></span>
 							<span v-if="image.duration" class="durationBadge">{{formatDuration(image.duration)}}</span>
 						</div>
 						<div v-else class="thumbBox">
-							<img v-bind:src="image.thumb || url + image.url" v-bind:width="image.width" v-bind:height="image.height" loading="lazy" v-bind:alt="image.name"/>
+							<img v-bind:src="image.thumb || image.url" v-bind:width="image.width" v-bind:height="image.height" loading="lazy" v-bind:alt="image.name"/>
 						</div>
-						<div v-if="prefs.showFileTimes && showDescriptions" class="imageText">{{convertUniXDate(image.changeDate)}}</div>
+						<div v-if="prefs.showFileTimes && showDescriptions" class="imageText">{{formatDate(image.changeDate)}}</div>
 						<div v-if="prefs.showFileNames && showDescriptions" class="imageText">{{image.name}}</div>
 					</div>
 				</a>
@@ -80,7 +80,7 @@ const ImagesViewer = {
 		const router = VueRouter.useRouter()
 
 		let secondsToHms = Vue.inject('secondsToHms');
-		let convertUniXDate = Vue.inject('convertUniXDate');
+		let formatDate = Vue.inject('formatDate');
 		let mittEventBus = Vue.inject('mittEventBus');
 		let prefs = Vue.inject('prefs');
 
@@ -91,7 +91,6 @@ const ImagesViewer = {
 		const noResults = Vue.ref(false)
 		const viewerMessage = Vue.ref(null)
 		const folderNotFound = Vue.ref(false)
-		const url = Vue.ref('')
 		const timeRemainingLabel = Vue.ref(null)
 		const searchText = Vue.ref(route.query.search || '')
 
@@ -102,6 +101,8 @@ const ImagesViewer = {
 		let zoomHoldTimer = null
 		let loadedRouteKey = null
 		let loadedVersion = null
+		let isActive = true
+		let needsReload = false
 
 		const showDescriptions = Vue.computed(function() {
 			return prefs.imageWidth > prefs.hideDescriptionsBelow
@@ -145,6 +146,7 @@ const ImagesViewer = {
 		}
 
 		function initializeData() {
+			renderedPageKey = null
 			loadedRouteKey = getRouteKey()
 			loadedVersion = null
 			imagesList.value = []
@@ -158,7 +160,7 @@ const ImagesViewer = {
 			timerAutoRefresh = null
 			timeRemainingLabel.value = null
 
-			if(!prefs.autoRefresh || !(prefs.autoRefreshInterval > 0)) {
+			if(!isActive || !prefs.autoRefresh || !(prefs.autoRefreshInterval > 0)) {
 				return
 			}
 
@@ -206,7 +208,8 @@ const ImagesViewer = {
 		}
 
 		function reloadFromFirstPage() {
-			if(route.name !== 'images') {
+			if(!isActive || route.name !== 'images') {
+				needsReload = true
 				return
 			}
 			if(parseInt(route.params.startIndex) === 0) {
@@ -221,6 +224,9 @@ const ImagesViewer = {
 		}
 
 		function getImages(callback, isRefresh) {
+			if(route.name !== 'images') {
+				return
+			}
 			let data = {
 				receive: 'yes',
 				startIndex: route.params.startIndex,
@@ -437,7 +443,7 @@ const ImagesViewer = {
 			if(image.fileSize) {
 				info.push(formatFileSize(image.fileSize))
 			}
-			return image.name + ' ' + convertUniXDate(image.changeDate) + (info.length ? ' · ' + info.join(' · ') : '')
+			return image.name + ' ' + formatDate(image.changeDate) + (info.length ? ' · ' + info.join(' · ') : '')
 		}
 
 		const handleKeyDownAction = function(args) {
@@ -461,6 +467,25 @@ const ImagesViewer = {
 			mittEventBus.on('handleKeyDownAction', handleKeyDownAction)
 			initAutoRefresh()
 			initializeData()
+		})
+
+		Vue.onDeactivated(function() {
+			isActive = false
+			stopZoomHold()
+			clearInterval(timerAutoRefresh)
+			timerAutoRefresh = null
+		})
+
+		Vue.onActivated(function() {
+			if(isActive) {
+				return
+			}
+			isActive = true
+			initAutoRefresh()
+			if(needsReload) {
+				needsReload = false
+				reloadFromFirstPage()
+			}
 		})
 
 		Vue.onUnmounted(function() {
@@ -493,7 +518,7 @@ const ImagesViewer = {
 			allCount,
 			breadcrumbs,
 			clearSearch,
-			convertUniXDate,
+			formatDate,
 			dataLoading,
 			folderNotFound,
 			formatDuration,
@@ -512,7 +537,6 @@ const ImagesViewer = {
 			startZoomHold,
 			stopZoomHold,
 			timeRemainingLabel,
-			url,
 			viewerMessage,
 			visibleFolders,
 			zoomIn,

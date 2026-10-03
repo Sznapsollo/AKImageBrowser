@@ -86,7 +86,7 @@ $folderPath = $folder['absolute'];
 if($settings->deleteOlderFiles) {
 	$maxAge = 60 * 60 * 24 * $settings->deleteOlderThanDays;
 	$now = time();
-	foreach(scandir($pathPrefix) as $file) {
+	foreach(scandir($pathPrefix) ?: array() as $file) {
 		$path = $pathPrefix.$file;
 		if(isValidFile($path, $allowedFileTypes) && $now - filemtime($path) >= $maxAge) {
 			unlink($path);
@@ -131,7 +131,7 @@ $returnFiles = array();
 foreach(array_slice($files, $startIndex, $itemsPerPage) as $file) {
 	$changeDate = $listing['mtimes'][$file];
 	$videoFormat = getVideoFormat($file);
-	$size = $videoFormat ? false : @getimagesize($folderPath.$file);
+	$size = $videoFormat ? null : readImageSize($folderPath.$file);
 	$relativeFile = ($folder['relative'] === '' ? '' : $folder['relative'].'/').$file;
 	$returnFiles[] = array(
 		'name' => $file,
@@ -139,7 +139,7 @@ foreach(array_slice($files, $startIndex, $itemsPerPage) as $file) {
 		'changeDate' => $changeDate,
 		'type' => $videoFormat ? 'video' : 'image',
 		'format' => $videoFormat,
-		'thumb' => getThumbnailUrl($settings, $relativeFile, $changeDate),
+		'thumb' => $size ? getThumbnailUrl($settings, $relativeFile, $changeDate, $size[0], $size[1]) : getThumbnailUrl($settings, $relativeFile, $changeDate),
 		'fileSize' => @filesize($folderPath.$file),
 		'width' => $size ? $size[0] : null,
 		'height' => $size ? $size[1] : null
@@ -151,7 +151,7 @@ foreach($folders as $name) {
 	$relative = $folder['relative'] === '' ? $name : $folder['relative'].'/'.$name;
 	$returnFolder = array(
 		'name' => $name,
-		'path' => $relative
+		'path' => displayPath($relative)
 	);
 	if($startIndex === 0) {
 		$summary = summarizeFolder(readFolderListing($folderPath.$name, $allowedFileTypes, $showSubfolders, false, $pathPrefix), $fileTypes);
@@ -163,7 +163,7 @@ foreach($folders as $name) {
 }
 
 $response = array(
-	'path' => $folder['relative'],
+	'path' => displayPath($folder['relative']),
 	'folders' => $returnFolders,
 	'images' => $returnFiles,
 	'allCount' => count($files)

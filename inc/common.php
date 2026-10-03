@@ -33,10 +33,25 @@ function resolveFolder($basePath, $path, $showSubfolders) {
 		return null;
 	}
 	$absolute = realpath($basePath.$path);
-	if($absolute === false || !is_dir($absolute) || !isInside($absolute, $basePath)) {
+	if($absolute === false && strpos($path, '%') !== false) {
+		$segments = array_map('rawurldecode', $segments);
+		foreach($segments as $segment) {
+			if(!isVisibleFolderName($segment, false) || strpos($segment, '/') !== false || strpos($segment, "\0") !== false) {
+				return null;
+			}
+		}
+		$absolute = realpath($basePath.implode('/', $segments));
+	}
+	if($absolute === false || !is_dir($absolute) || !isInside($absolute, $basePath) || isInside($absolute, __DIR__)) {
 		return null;
 	}
 	return array('relative' => implode('/', $segments), 'absolute' => $absolute.'/');
+}
+
+function displayPath($relative) {
+	return implode('/', array_map(function($segment) {
+		return function_exists('mb_check_encoding') && !mb_check_encoding($segment, 'UTF-8') ? rawurlencode($segment) : $segment;
+	}, explode('/', $relative)));
 }
 
 function isVisibleFolderName($name, $isRoot) {
@@ -53,11 +68,39 @@ function encodePath($relative) {
 	return $relative === '' ? '' : implode('/', array_map('rawurlencode', explode('/', $relative))).'/';
 }
 
-function getThumbnailUrl($settings, $relativeFile, $mtime) {
+function getThumbnailUrl($settings, $relativeFile, $mtime, $width = null, $height = null) {
 	if(!thumbnailsEnabled($settings) || !isThumbnailType($relativeFile)) {
 		return null;
 	}
+	if($width && $height && min($width, $height) <= getThumbnailSize($settings)) {
+		return null;
+	}
 	return 'inc/thumb.php?f='.rawurlencode($relativeFile).'&v='.$mtime;
+}
+
+function getThumbnailSize($settings) {
+	return isset($settings->thumbnailSize) ? max(50, (int)$settings->thumbnailSize) : 400;
+}
+
+function readImageSize($path) {
+	$size = @getimagesize($path);
+	if(!$size) {
+		return null;
+	}
+	$width = $size[0];
+	$height = $size[1];
+	if($size[2] === IMAGETYPE_JPEG && in_array(getExifOrientation($path), array(5, 6, 7, 8), true)) {
+		list($width, $height) = array($height, $width);
+	}
+	return array($width, $height);
+}
+
+function getExifOrientation($path) {
+	if(!function_exists('exif_read_data')) {
+		return 1;
+	}
+	$exif = @exif_read_data($path);
+	return $exif && isset($exif['Orientation']) ? (int)$exif['Orientation'] : 1;
 }
 
 function isThumbnailType($file) {
@@ -75,7 +118,11 @@ function thumbnailsEnabled($settings) {
 
 function ensureWritableDir($dir) {
 	if(!is_dir($dir)) {
-		@mkdir($dir, 0755);
+		if(!@mkdir($dir, 0755)) {
+			return false;
+		}
+		@file_put_contents($dir.'/.htaccess', "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n");
+		@file_put_contents($dir.'/index.html', '');
 	}
 	return is_dir($dir) && is_writable($dir);
 }
@@ -97,21 +144,22 @@ function readFolderListing($absolute, $allowedFileTypes, $showSubfolders, $isRoo
 
 	if(is_file($cacheFile)) {
 		$cached = @unserialize((string)@file_get_contents($cacheFile), array('allowed_classes' => false));
-		if(is_array($cached) && $cached['dirTime'] === $dirTime && time() - $cached['created'] < 300) {
+		if(is_array($cached) && $cached['dirTime'] === $dirTime && time() - $cached['created'] < 30) {
 			return $cached;
 		}
 	}
 
 	$files = array();
 	$folders = array();
-	foreach(scandir($absolute) as $name) {
+	$incPath = realpath(__DIR__);
+	foreach(scandir($absolute) ?: array() as $name) {
 		$name = (string)$name;
 		$path = $absolute.'/'.$name;
 		if(isValidFile($path, $allowedFileTypes)) {
 			$files[$name] = filemtime($path);
 		} else if($showSubfolders && is_dir($path) && isVisibleFolderName($name, $isRoot)) {
 			$real = realpath($path);
-			if($real !== false && isInside($real, $basePath)) {
+			if($real !== false && isInside($real, $basePath) && !isInside($real, $incPath)) {
 				$folders[] = $name;
 			}
 		}
@@ -154,9 +202,9 @@ function cleanListingCache($cacheDir) {
 		return;
 	}
 	@touch($marker);
-	foreach(scandir($cacheDir) as $name) {
+	foreach(scandir($cacheDir) ?: array() as $name) {
 		$path = $cacheDir.'/'.$name;
-		if($name[0] !== '.' && is_file($path) && time() - filemtime($path) > 30 * 86400) {
+		if($name[0] !== '.' && $name !== 'index.html' && is_file($path) && time() - filemtime($path) > 30 * 86400) {
 			@unlink($path);
 		}
 	}

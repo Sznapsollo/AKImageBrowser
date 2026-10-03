@@ -3,7 +3,9 @@
 const routes = [
 	{ path: '/images/:startIndex/:itemsPerPage/:imageName?', name: 'images', component: ImagesViewer, props: true },
 	{ path: '/about', name: 'about', component: AboutComponent },
-	{ path: '/', name: 'home', component: HomeComponent }
+	{ path: '/', name: 'home', redirect: function() {
+		return { name: 'images', params: { startIndex: 0, itemsPerPage: getLocalStorage(settings.itemsPerPageStorageName, settings.itemsPerPageDefault) } }
+	} }
 ];
 
 const waitForRenderedPage = function(key) {

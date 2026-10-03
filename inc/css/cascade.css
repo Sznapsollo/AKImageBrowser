@@ -734,6 +734,11 @@ a:hover .imageArea {
 	top: 105px;
 }
 
+.aboutPage {
+	padding: 20px;
+	text-align: left;
+}
+
 .durationBadge {
 	position: absolute;
 	right: 6px;
