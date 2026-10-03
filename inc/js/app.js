@@ -67,16 +67,7 @@ const secondsToHms = function(d, emptyValue) {
 
 const convertUniXDate = function(unixTimestamp) {
 	try {
-		var date = new Date(unixTimestamp*1000);
-		// console.log("Unix Timestamp:",unixTimestamp)
-		// console.log("Date Timestamp:",date.getTime())
-		// console.log(date)
-		return (""+date.getDate()+
-				"/"+(date.getMonth()+1)+
-				"/"+date.getFullYear()+
-				" "+date.getHours()+
-				":"+date.getMinutes()+
-				":"+date.getSeconds());
+		return new Date(unixTimestamp*1000).toLocaleString();
 	} catch(e) {
 		console.warn('convertUniXDate', unixTimestamp)
 	}

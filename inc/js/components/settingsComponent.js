@@ -130,13 +130,11 @@ app.component('settings-component' , {
 			setLocalStorage(settings.autoRefreshStorageName, autoRefresh.value);
 			setLocalStorage(settings.autoRefreshIntervalStorageName, autoRefreshInterval.value);
 			
-			this.closeOptions();
+			closeOptions();
 		}
 
 		Vue.onMounted(function() {
 			console.log('SettingsComponent mounted')
-
-			getLocalStorage()
 
 			mittEventBus.on('showSettings', (args) => {
 				if(!args) {

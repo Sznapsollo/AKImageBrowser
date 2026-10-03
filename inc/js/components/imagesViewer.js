@@ -24,10 +24,10 @@ const ImagesViewer = {
 			<div v-if="dataLoading" class="loadingWrapper marginTop10 marginBottom10"><img src="inc/imgs/spinner.gif" style="width: 30px;"/></div>
 
 			<div class="imageItem" v-for="image in imagesList">
-				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url+image.name">
+				<a class="fancybox" v-bind:data-caption="image.name + ' ' + convertUniXDate(image.changeDate)" data-fancybox="images" v-bind:href="url + image.url">
 					<div v-bind:style="imageAreaStyle" class="imageArea">
 						<div>
-							<img v-bind:data-src="url + image.name" class="notInitiated" class="lazyload" src="inc/imgs/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
+							<img v-bind:data-src="url + image.url" class="lazyload" src="inc/imgs/placeholder-image.png" alt="" style="width: 100%; height: auto"/>
 						</div>
 						<div v-if="showFileTimes && showDescriptions"style="word-wrap: break-word">{{convertUniXDate(image.changeDate)}}</div>
 						<div v-if="showFileNames && showDescriptions"style="word-wrap: break-word">{{image.name}}</div>
@@ -78,13 +78,18 @@ const ImagesViewer = {
 		let autoRefreshInterval = null
 		let autoRefresh = null
 
-		let timerAutoRefresh
-		let timerUpdateTimeLeft
+		let timerAutoRefresh = null
 		
 		function initializeData() {
 			var getImgsCalback = function() {
-				if(route.params.imageName) {
-					$('a[href$="'+(url.value + route.params.imageName)+'"]')[0].click()
+				if(!route.params.imageName) {
+					return
+				}
+				let link = Array.from(document.querySelectorAll('a[data-fancybox="images"]')).find(function(a) {
+					return a.getAttribute('href') === route.params.imageName
+				})
+				if(link) {
+					link.click()
 				}
 			}
 
@@ -101,17 +106,25 @@ const ImagesViewer = {
 			getImages(getImgsCalback);
 		}
 
-		function initAutoRefresh()
-		{
-			if(timerAutoRefresh) {
-				clearTimeout(timerAutoRefresh);
-			}
-		
-			timeRemaining = autoRefreshInterval
+		function initAutoRefresh() {
+			clearInterval(timerAutoRefresh)
+			timerAutoRefresh = null
+			timeRemainingLabel.value = null
 
-			checkInterval(timerAutoRefresh, function() { getImages(); timeRemaining = autoRefreshInterval; }, autoRefreshInterval);
-			checkInterval(timerUpdateTimeLeft, updateTimeLeft, 1);
-		};
+			if(!autoRefresh || !(autoRefreshInterval > 0)) {
+				return
+			}
+
+			timeRemaining = autoRefreshInterval
+			timerAutoRefresh = setInterval(function() {
+				timeRemaining--
+				if(timeRemaining <= 0) {
+					timeRemaining = autoRefreshInterval
+					getImages()
+				}
+				timeRemainingLabel.value = secondsToHms(timeRemaining, "now")
+			}, 1000)
+		}
 
 		function changeFancyBoxImage(args) {
 			if(!args) {args = {};};
@@ -131,18 +144,6 @@ const ImagesViewer = {
 			})
 		}
 
-		function checkInterval(timer, fn, timeInterval) {
-			if(!autoRefresh) {
-				return;
-			}
-
-			new Promise(function(resolve, reject) {
-				timer = setTimeout(function() {fn(); resolve()}, 1000 * timeInterval);
-			}).then(function() {
-				checkInterval(timer, fn, timeInterval);
-			});
-		}
-
 		function getImages(callback) {
 
 			let fileTypes = getLocalStorage(settings.fileTypesStorageName, settings.fileTypesDefault);
@@ -159,7 +160,13 @@ const ImagesViewer = {
 				.then(function (dataResponse) {
 
 					if(dataResponse?.data?.status === -2) {
-						let secretWord = prompt('What is secred word');
+						let secretWord = prompt('What is the secret word?');
+						if(secretWord === null) {
+							sessionStorage.removeItem("secretWord");
+							dataLoading.value = false;
+							viewerMessage.value = "Secret word required";
+							return
+						}
 						sessionStorage.setItem("secretWord", secretWord);
 						getImages(callback);
 						return
@@ -170,9 +177,7 @@ const ImagesViewer = {
 					imagesList.value = dataResponse.data.images;
 					allCount.value = dataResponse.data.allCount;
 
-					if(!allCount.value) {
-						noResults.value = true;
-					}
+					noResults.value = !allCount.value;
 
 					setTimeout(function()
 					{
@@ -195,11 +200,6 @@ const ImagesViewer = {
 		// 	router.go()
 		// }
 
-		const updateTimeLeft = function() {
-			timeRemaining--;
-			timeRemainingLabel.value = secondsToHms(timeRemaining, "now")
-		}
-
 		const zoomIn = function() {
 			imageWidth += 10;
 			imageAreaStyle.value = {width: imageWidth + 'px'};
@@ -216,7 +216,7 @@ const ImagesViewer = {
 		}
 
 		const handleKeyDownAction = function (args) {
-			if(!args) {ags = {};};
+			if(!args) {args = {};};
 			let key = args.key
 			switch (key) {
 				case '=':
@@ -248,13 +248,9 @@ const ImagesViewer = {
 			initializeData();
 		})
 
-		// Vue.onUnmounted(function() {
-		// 	console.log('ImagesViewer unmounted')
-
-		// 	if(timerAutoRefresh) {
-		// 		clearTimeout(timerAutoRefresh);
-		// 	}
-		// })
+		Vue.onUnmounted(function() {
+			clearInterval(timerAutoRefresh)
+		})
 
 		Vue.watch(
 			() => route.params.itemsPerPage,

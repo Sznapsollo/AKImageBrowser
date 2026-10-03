@@ -28,8 +28,18 @@ function manageKeyDown(e) {
 	if(typeof mittEventBus === 'undefined') {
 		return
 	}
+	var target = e.target;
+	if(target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) {
+		return
+	}
 
 	mittEventBus.emit('handleKeyDownAction', {key: e.key});
+}
+
+function escapeHtml(text) {
+	var div = document.createElement('div');
+	div.textContent = text == null ? '' : String(text);
+	return div.innerHTML;
 }
 
 function applePie() {
@@ -60,7 +70,7 @@ function StartFancyBox(groupName)
 		caption: function (fancybox, carousel, slide) {
 			// `${slide.index + 1} / ${carousel.slides.length} <br />` + slide.caption
 			return (
-				`${slide.caption}`
+				escapeHtml(slide.caption)
 		  	);
 		},
 		on: {
